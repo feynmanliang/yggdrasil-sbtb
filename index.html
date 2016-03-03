@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Yggdrasil: Faster Decision Trees using Column Partitioning in Spark</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link href="css/styles.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+        "HTML-CSS": { scale: 50, linebreaks: { automatic: true } }, 
+      });
+    </script>
+    <script src="js/highlight.min.js"></script>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/7.5/styles/tomorrow-night.min.css">
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+
+    <section>
+    <h1 class='title'>Yggdrasil: Faster Decision Trees using Column Partitioning in Spark</h1>
+    <table align='center' class='author'>
+      <tr>
+        <td>Firas Abuzaid</td>
+        <td>Joseph Bradley</td>
+      </tr>
+      <tr>
+        <td>Feynman Liang</td>
+        <td>Peter Cnudde</td>
+      </tr>
+      <tr>
+        <td>Hirakendu Das</td>
+        <td>Andrew Feng</td>
+      </tr>
+      <tr>
+        <td>Lee Yang</td>
+        <td>Matei Zaharia</td>
+      </tr>
+      <tr>
+        <td class='center' colspan='2'>Ameet Talwalkar</td>
+      </tr>
+    </table>
+    <div style='text-align: center;'>
+      <img src='images/databricks.png' width="30%"></img>
+      <img src='images/csail.gif' width="15%"></img>
+      <img src='images/yahoo.png' width="30%"></img>
+    </div>
+    </section>
+
+    <!--<section id="tree">
+    <h1>A (Brief) Decision Tree Tutorial</h1>
+    <div id="decision-tree"></div>
+    </section>-->
+    <section>
+    <h1>A (Brief) Decision Tree Tutorial</h1>
+    <div class='container'>
+      <div class='left'>
+        <h3>Components:</h3>
+        <ul>
+          <li><u>Node</u>: Each node in the tree corresponds to a decision point </li>
+          <li><u>Partition</u>: It processes some subset of the original dataset that satisfies all upstream conditions</li>
+          <li><u>Feature Split</u>: It splits the partition it receives based on a single feature</li>
+          <li><u>Threshold</u>: The threshold is the value of the feature around which the partition is split</li>
+        </ul>
+      </div>
+      <div class='right'>
+        <img src='images/tree.png' width="100%"></img>
+      </div>
+    </div>
+    </section>
+
+    <section>
+    <h1>Decision Tree Algorithm: Single Node</h1>
+    <div class='container'>
+      <div class='left'>
+        <ul>
+          <li><u>FindBestSplit</u>: searches through every threshold for every feature, computes the feature and threshold that minimizes impurity</li>
+          <li><u>StoppingCriteria</u>: Either no split can be found, or we’ve reached the max depth of the tree</li>
+          <li><u>FindPrediction</u>: In the leaf nodes, compute prediction by averaging label values</li>
+        </ul>
+      </div>
+      <div class='right'>
+        <img src='images/single-node-decision-tree.png' width="100%"></img>
+      </div>
+    </div>
+    </section>
+
+    <!--<section>
+    <h1>Making Predictions</h1>
+    <div id="train-vs-test"></div>
+    </section>-->
+
+    <section>
+    <h1>Distributed Decision Trees: The Classic Approach (<a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a>)</h1>
+    <div class='container'>
+      <div class='left'>
+        <ul>
+          <li>Partition training set <span class='emph'>by row</span>
+          <li>Communication cost: $O(2^DkpB)$</li>
+        </ul>
+      </div>
+      <div class='right'>
+        <img src='images/planet-diagram.png' width="90%"></img>
+      </div>
+    </div>
+    <div class='notation'>
+      \begin{array}{|c|c|}
+      \hline
+      n & \text{# instances} \\ \hline
+      p & \text{# features} \\ \hline
+      D & \text{max. depth of tree} \\ \hline
+      B & \text{# bins to use in PLANET} \\ \hline
+      k & \text{# workers} \\ \hline
+      \end{array}
+    </div>
+    </section>
+
+    <section>
+    <h1>The New Approach: Yggdrasil</h1>
+    <div class='container'>
+      <div class='left'>
+        <ul>
+          <li>Partition training set <span class='emph'>by column</span>
+          <li>Communication cost: $O(2^Dk + Dnk)$</li>
+        </ul>
+      </div>
+      <div class='right'>
+        <img src='images/yggdrasil-diagram.png' width="80%"></img>
+      </div>
+    </div>
+    <div class='notation'>
+      \begin{array}{|c|c|}
+      \hline
+      n & \text{# instances} \\ \hline
+      p & \text{# features} \\ \hline
+      D & \text{max. depth of tree} \\ \hline
+      B & \text{# bins to use in PLANET} \\ \hline
+      k & \text{# workers} \\ \hline
+      \end{array}
+    </div>
+    </section>
+
+    <section>
+    <h1>The Tradeoffs</h1>
+    <div class='container'>
+      <div class='left-image'>
+        <img src='images/n-vs-p.png' width="80%"></img>
+        <div class='caption'>$D=15,k=16,B=32$</div>
+      </div>
+      <div class='right'>
+        <img src='images/n-vs-d.png' width="80%"></img>
+        <div class='caption'>$p=2500,k=16,B=32$</div>
+      </div>
+    </div>
+    </section>
+
+    <!--<section class='full-image' style="background: none; background-size:cover; background:url('images/janelia.jpg');">
+    </section>
+
+    <section class='full-image' style="background: none; background-size:cover; background:url('images/starfleet.jpg');">
+    </section>-->
+
+    <section>
+    <h1>all the credit</h1>
+    <h3>andrew osheroff (<a href="https://twitter.com/andrewosh">@andrewosh</a>)</h3>
+    <h3>kyle kelley (<a href="https://twitter.com/rbgkrk">@rgbkrk</a>)</h3>
+    <h3>safia abdalla (<a href="https://twitter.com/captainsafia">@captainsafia</a>)</h3>
+    <h3>min rk (<a href="https://twitter.com/minrk">@minrk</a>)</h3>
+    <h3>peter parente (<a href="https://twitter.com/parente">@parente</a>)</h3>
+    </section>
+
+    <section>
+    <h1>it all started with brains...</h1>
+    </section>
+
+    <section>
+    <div style='margin-top:50px' id="movie-container">
+      <div id="full-screen-video-left">
+        <video id="mouse-movie" autoplay loop src="mov/Movie_2.mp4" width="590px"></video>
+      </div>
+      <div id="full-screen-video-right">
+        <video id="mouse-movie" autoplay loop src="mov/responses-trimmed.mp4" width="440px"></video>
+      </div>
+      <p class='author'>Nicholas Sofroniew + Karel Svoboda</p>
+    </div>
+    </section>
+
+    <section>
+    <h1>how do we put <br>all of <span class='emph'>that</span> online??</h1>
+    </section>
+
+    <section>
+    <h1>how do we put <br>all of <span class='emph'>that</span> online??</h1>
+    <h1><span style='color: white'>tmpnb</span>?!</h1>
+    </section>
+
+    <section>
+    <h1>but then we wanted<br>to do <span style='color: rgb(190,120,170)'>another</span>...</h1>
+    </section>
+
+    <section>
+    <h1>but then we wanted<br>to do <span style='color: rgb(190,120,170)'>another</span>... <br>and <span style='color: rgb(190, 120, 126)'>another</span>... </h1>
+    </section>
+
+    <section>
+    <h1>but then we wanted<br>to do <span style='color: rgb(190,120,170)'>another</span>... <br>and <span style='color: rgb(190, 120, 126)'>another</span>... <br>and <span style='color: rgb(190, 159, 120)'>another</span>...</h1>
+    </section>
+
+    <section>
+    <h1>could we turn any repo into a deployment??</h1>
+    </section>
+
+    <section>
+    <h1 style='margin-top:400px'>then i had a beer with fernando</h1>
+    </section>
+
+    <section class='full-image' style="background: none; background-size:cover; background:url('images/fernando-brian.jpg');">
+    </section>
+
+    <section class='full-image' style="background: none; background-size:cover; background:url('images/fernando-brian-dim.jpeg');">
+    <h1 style='margin-top:0px'>"repos + notebooks = torpedo aimed at academic publishing"<br>-- anonymous</h1>
+    </section>
+
+    <section>
+    <h1>so we made a prototype</h1>
+    </section>
+
+    <section>
+    <h1>what just<br>happened?</h1>
+    </section>
+
+    <section>
+    <h1><span style='font-size: 60px'>STEP 1</span><span style='font-size:80px'>: repo to image</span></h1>
+    <img src='images/steps-step-1.svg' style='margin-left: -20px; width: 1100px'></img>
+    </section>
+
+    <section>
+    <h1><span style='font-size: 60px'>STEP 2</span><span style='font-size:80px'>: image to template</span></h1>
+    <img src='images/steps-step-2.svg' style='margin-left: -20px; width: 1100px'></img>
+    </section>
+
+    <section>
+    <h1><span style='font-size: 60px'>STEP 3</span><span style='font-size:80px'>: template to deployment</span></h1>
+    <img src='images/steps-step-3.svg' style='margin-left: -20px; width: 1100px'></img>
+    </section>
+
+    <section>
+    <h1>current stack</h1>
+    <h2>image building: <span class='emph'>Docker</span></h2>
+    <h2>pod orchestration: <span class='emph' >Kubernetes</span></h2>
+    <h2>frontend: <span class='emph'>Jupyter</span></h2>
+    </section>
+
+    <section class='full'>
+    <iframe src='http://mybinder.org/status/' frameborder='0'></iframe>
+    </section>
+
+    <section class='full'>
+    <iframe src='http://mybinder.org/feed/' frameborder='0'></iframe>
+    </section>
+
+    <section>
+    <h1 class='title'>FAQ</h1>
+    </section>
+
+    <section>
+    <h1><span class='tag'>#</span>who's paying?</h1>
+    </section>
+
+    <section>
+    <h1><span class='tag'>#</span>who's paying?</h1>
+    <h1 class='answer'>my lab, it's just<br> a couple nodes<br>(for now)</h1>
+    </section>
+
+    <section>
+    <h1><span class='tag'>#</span>can i deploy one?</h1>
+    </section>
+
+    <section>
+    <h1><span class='tag'>#</span>can i deploy one?</h1>
+    <h1 class='answer'>of course! but maybe wait for us to make it a little easier</h1>
+    </section>
+
+    <section>
+    <h1><span class='tag'>#</span>our comapny wants to sell this as a service, can you please stop?</h1>
+    </section>
+
+    <section>
+    <h1><span class='tag'>#</span>our comapny wants to sell this as a service, can you please stop?</h1>
+    <h1 class='answer'>no</h1>
+    </section>
+
+    <section style='background-color: rgb(230,230,230)'>
+    <h1 style='color: rgb(50,50,50)'>looking ahead</h1>
+    <img src='images/logos-stage-1.svg' style='width: 900px'></img>
+    </section>
+
+    <section style='background-color: rgb(230,230,230)'>
+    <h1 style='color: rgb(50,50,50)'>looking ahead</h1>
+    <img src='images/logos-stage-3.svg' style='width: 900px'></img>
+    </section>
+
+    <section style='background-color: rgb(230,230,230)'>
+    <h1 style='color: rgb(50,50,50)'>looking ahead</h1>
+    <img src='images/logos-stage-4.svg' style='width: 900px'></img>
+    </section>
+
+    <section style='background-color: rgb(230,230,230)'>
+    <h1 style='color: rgb(50,50,50)'>looking ahead</h1>
+    <img src='images/logos-stage-5.svg' style='width: 900px'></img>
+    </section>
+
+    <section>
+    <h1>there's lots to do!</h1>
+    <pre><code class="python">binder build --repo
+binder register --image
+binder deploy kubernetes --server --token
+binder deploy swarm --server --token</pre></code>
+    </section>
+
+    <section>
+    <h1>all the links</h1>
+    <h3 >codeneuro (<a href="http://notebooks.codeneuro.org">notebooks.codeneuro.org</a>)</h3>
+    <h3 >tmpnb (<a href="https://github.com/jupyter/tmpnb">github.com/jupyter/tmpnb</a>)</h3>
+    <h3 >binder site (<a href="http://mybinder.org">mybinder.org</a>)</h3>
+    <h3 >binder github (<a href="https://github.com/binder-project">github.com/binder-project</a>)</h3>
+    </section>
+
+    <section>
+    <h1 class='title'>THANKS!</h1>
+    </section>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/d3.v3.min.js"></script>
+    <script src="js/stack.v1.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
+    <script src="js/tree-training-set-98.js"></script>
+    <script src="js/helpers.js"></script>
+    script src="js/main.js"></script>-->
+  <script>
+    MathJax.Hub.Register.StartupHook("End",function () {
+      //here include your additional javascript code
+      $(".notation").css("font-size","50%");
+    });
+
+    // Append the following footer to each section:
+    // <div class='footer'>
+      //   <a href="https://github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk">
+        //     github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk
+        //   </a>
+      // </div>
+    var footerURL = "https://github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk";
+    d3.selectAll("section").append("div").attr("class", "footer");
+    d3.selectAll("div.footer").append("a").attr("href", footerURL).text("View on GitHub");
+
+    // every link opens a new tab
+    d3.selectAll("a").attr("target", "_blank")
+
+    var mystack = stack()
+    .on("activate", activate)
+    .on("deactivate", deactivate);
+
+    var section = d3.selectAll("section"),
+    decisionTree = d3.select("#tree"),
+    //followAnchor = d3.select("#follow-anchor"),
+    //lorenz = d3.select("#lorenz"),
+    decisionTreeIndex = section[0].indexOf(decisionTree.node());
+    // lorenzIndex = section[0].indexOf(lorenz.node());
+
+    function refollow() {
+      var scroll =  (1 - (decisionTreeIndex + (1 - mystack.scrollRatio()) / 2 - d3.event.offset)) * 100;
+      console.log("scroll top: " + scroll + "%");
+      DecisionTree.handleScroll(scroll);
+    }
+
+    function activate(d, i) {
+      // var track = $('.indicator').children()
+      // track.css('height','15px')
+      // track.css('width','15px')
+      // track.css('border-radius','10px')
+      // track.css('background','none')
+      // track.css('background-color','rgb(255,255,255)')
+      // track.css('opacity', '0.5')
+      // track.css('margin-left', '5px')
+      if (i === decisionTreeIndex) mystack.on("scroll.follow", refollow);
+      // if (i === lorenzIndex) startLorenz();
+    }
+
+    function deactivate(d, i) {
+      if (i === decisionTreeIndex) mystack.on("scroll.follow", null);
+      // if (i === lorenzIndex) stopLorenz();
+    }
+
+    var lorenzInterval;
+
+    function startLorenz() {
+      var δτ = 0.003,
+      ρ = 28,
+      σ = 10,
+      β = 8 / 3,
+      x = .5,
+      y = .5,
+      z = 10,
+      n = 30;
+
+      var width = 1280,
+      height = 720;
+
+      var canvas = d3.select("canvas")
+      .style("position", "absolute")
+      .style("top", 0)
+      .style("left", 0)
+      .style("width", "100%")
+      .style("height", "100%")
+      .attr("width", width)
+      .attr("height", height);
+
+      var color = d3.scale.linear()
+      .domain([0, 20, 30, 50])
+      .range(["yellow", "orange", "brown", "purple"])
+      .interpolate(d3.interpolateHcl);
+
+      var context = canvas.node().getContext("2d");
+
+      context.lineWidth = .2;
+      context.fillStyle = "rgba(0,0,0,.03)";
+
+      d3.timer(function() {
+        context.save();
+        context.globalCompositeOperation = "lighter";
+        context.translate(width / 2, height / 2);
+        context.scale(12, 14);
+        context.rotate(30);
+        for (var i = 0; i < n; ++i) {
+          context.strokeStyle = color(z);
+          context.beginPath();
+          context.moveTo(x, y);
+          x += δτ * σ * (y - x);
+          y += δτ * (x * (ρ - z) - y);
+          z += δτ * (x * y - β * z);
+          context.lineTo(x, y);
+          context.stroke();
+        }
+        context.restore();
+        return !lorenzInterval;
+      });
+
+      lorenzInterval = setInterval(function() {
+        context.fillRect(0, 0, width, height);
+      }, 100);
+    }
+
+    function stopLorenz() {
+      lorenzInterval = clearInterval(lorenzInterval);
+    }
+
+  </script>
+</body>
+</html>
