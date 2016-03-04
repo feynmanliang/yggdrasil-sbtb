@@ -22,6 +22,7 @@ section {
 .container {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   height: 85%;
   padding-top: 5%;
   padding-bottom: 5%;
@@ -31,19 +32,35 @@ section {
 .left {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  width: 50%;
+  flex-grow: 1;
+  /*justify-content: center;*/
+  width: 45%;
   resize: vertical;
   overflow: auto;
+  padding-left: 2.5%;
+  padding-right: 2.5%;
 }
 
 .left-image {
   width: 50%;
+  flex-grow: 1;
 }
 
+.right-image {
+  width: 50%;
+  flex-grow: 1;
+}
 
 .right {
-  width: 50%;
+  width: 45%;
+  flex-grow: 1;
+  padding-left: 2.5%;
+  padding-right: 2.5%;
+}
+
+.table-label {
+  text-align: center;
+  margin-bottom: -7%;
 }
 
 .full {
@@ -78,6 +95,7 @@ h3 {
 }
 
 ul {
+  margin: 0;
   resize: vertical;
   overflow: auto;
 }
@@ -99,7 +117,7 @@ li {
   color: rgb(100, 199, 0);
   font-family:'Raleway';
   font-style: italic;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .title {
@@ -115,7 +133,7 @@ li {
   font-size: 50%;
 }
 
-.notation {
+.right-corner {
   position: absolute;
   top: 3.5em;
   right: 0.5em;
@@ -123,15 +141,18 @@ li {
   /*font-size: 50% !important;*/
 }
 
+.highlight {
+  color: rgb(200,100,100);
+  font-weight: 500;
+}
+
 .tag {
   color: rgb(200,100,100);
-  padding-right: 30px;
 }
 
 .answer {
   font-family: 'CooperHewitt-Medium';
   color: rgb(200,180,100);
-  margin-top: 40px;
 }
 
 /*.indicator {
@@ -165,6 +186,7 @@ a:hover {
 }
 
 .center {
+  width: 100%;
   text-align: center;
 }
 
