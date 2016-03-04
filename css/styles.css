@@ -10,9 +10,9 @@ body {
 }
 
 section {
-  background: rgb(235,235,235);
+  background: rgb(248,240,239);
   text-align: left;
-  color: #111;
+  color: #333;
   padding-left: 10%;
   padding-right: 10%;
   padding-top: 5%;
@@ -24,8 +24,8 @@ section {
   flex-direction: row;
   flex-wrap: wrap;
   height: 85%;
-  padding-top: 5%;
-  padding-bottom: 5%;
+  padding-top: 3%;
+  padding-bottom: 3%;
   position: relative;
 }
 
@@ -34,33 +34,42 @@ section {
   flex-direction: column;
   flex-grow: 1;
   /*justify-content: center;*/
-  width: 45%;
+  width: 47%;
   resize: vertical;
   overflow: auto;
-  padding-left: 2.5%;
-  padding-right: 2.5%;
+  padding-left: 0;
+  padding-right: 3%;
 }
 
 .left-image {
+  position: relative;
   width: 50%;
   flex-grow: 1;
 }
 
 .right-image {
+  position: relative;
   width: 50%;
   flex-grow: 1;
 }
 
+.image-center img {
+  position: absolute;
+  top:0;
+  bottom:0;
+  margin:auto;
+}
+
 .right {
-  width: 45%;
+  width: 47%;
   flex-grow: 1;
-  padding-left: 2.5%;
-  padding-right: 2.5%;
+  padding-left: 3%;
+  padding-right: 0;
 }
 
 .table-label {
   text-align: center;
-  margin-bottom: -7%;
+  margin-bottom: -10%;
 }
 
 .full {
@@ -75,23 +84,22 @@ section {
 
 h1 {
   font-family: 'Lato', sans-serif;
-  /*font-size: 110px;*/
+  font-size: 150%;
   line-height: 1.2em;
-  margin-bottom: 5px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 h2 {
-  /*font-size: 60px;*/
   font-weight: 300;
   line-height: 1.2em;
 }
 
 h3 {
-  /*font-size: 50px;*/
   font-weight: 300;
   line-height: 1.1em;
-  margin-bottom: 0px;
-  margin-top: 35px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 ul {
@@ -101,7 +109,12 @@ ul {
 }
 
 li {
-  margin-bottom: 2%;
+  font-size: 90%;
+  margin-bottom: 1%;
+}
+
+sub {
+  font-size: 50%;
 }
 
 #follow {
@@ -109,20 +122,34 @@ li {
 }
 
 .caption {
-  padding-left: 15%;
-  padding-right: 15%;
+  padding-left: 20%;
+  padding-right: 20%;
+  line-height: 1.2em;
+  text-align: center;
 }
 
 .emph {
-  color: rgb(100, 199, 0);
   font-family:'Raleway';
   font-style: italic;
   font-weight: 600;
 }
 
+/* Green */
+.correct {
+  color: rgb(100, 199, 0);
+}
+
+/* Red */
+.incorrect {
+  color: rgb(230, 87, 72);
+}
+
+
 .title {
+  font-style: 'Lato', sans-serif;
   font-size: 220%;
   text-align: center;
+  line-height: 1.0em;
 }
 
 .footer {
@@ -135,15 +162,23 @@ li {
 
 .right-corner {
   position: absolute;
-  top: 3.5em;
+  top: 3.0em;
   right: 0.5em;
   display: inline-block;
-  /*font-size: 50% !important;*/
 }
 
+.tree-green {
+  color: rgb(65,153,43);
+}
+
+.tree-blue {
+  color: rgb(16,70,131);
+}
+
+
 .highlight {
-  color: rgb(200,100,100);
-  font-weight: 500;
+  color: rgb(164,38,67);
+  font-weight: 600;
 }
 
 .tag {
@@ -157,10 +192,6 @@ li {
 
 /*.indicator {
   display: none;
-}*/
-
-/*#decision-tree {
-  padding: 2em;
 }*/
 
 svg {
@@ -177,12 +208,13 @@ a {
 
 a:link,
 a:visited {
-  color: #58ABE8;
+  /*color: #58ABE8;*/
+  color: #3499E3;
   text-decoration: none;
 }
 
 a:hover {
-  border-bottom: dotted 2px rgb(220,220,220);
+  border-bottom: dotted 2px rgb(190,190,190);
 }
 
 .center {
@@ -198,30 +230,10 @@ table td {
 }
 
 .author {
+  margin: auto;
   font-family: 'Raleway', sans-serif;
-  font-size: 150%;
+  font-size: 140%;
   font-weight: 300;
-  /*
-  text-align: right;
-  font-size: 42px;
-  position: absolute;
-  bottom: 0px;
-  margin-bottom: 110px;
-  right: 80px;
-  opacity: 0.7;*/
-}
-
-#full-screen-video-left {
-    float: left;
-    width: 600px;
-    margin-top: 0px;
-    margin-left: 0px;
-}
-
-#full-screen-video-right {
-    width: 500px;
-    margin-left: 650px;
-    margin-top: 0px;
 }
 
 pre {

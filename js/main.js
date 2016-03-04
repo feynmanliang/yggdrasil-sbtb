@@ -870,7 +870,7 @@ var TreeNodeView = Backbone.View.extend({
 
     this.pieChartLayer.append("path")
       .attr("fill", "none")
-      .attr("stroke", "#dddddd");
+      .attr("stroke", "#555555");
 
     this.pieChart = new TreePieView({
       g: this.pieChartLayer,
@@ -938,18 +938,13 @@ var TreeNodeView = Backbone.View.extend({
     var h2 = h1 + vunit;
 
     var domain = [
-      pre,
-      start, // both off
-      h1, // pie on
-      h2, // pie off, histogram on
-      end,
-      after
+      0 + 45,
+      0 + 45, // both off
+      2 + 45 + this.depth*5, // pie on
+      6 + 45 + this.depth*5, // pie off, histogram on
+      80,
+      85,
     ]
-    var min = _.min(domain)
-    var max = _.max(domain)
-    domain = _.map(domain, function(num){ return num / (max - min) * 100 + 100; });
-
-    console.log(domain);
 
     // Histogram Threshold
     this.histogramOpacityThreshold = d3.scale.threshold()
@@ -965,8 +960,9 @@ var TreeNodeView = Backbone.View.extend({
 
       var distanceToGo = (this.maxDepth - this.depth) * (windowHeight * 0.45) / this.maxDepth;
 
+      console.log([this.depth*5 + 45, 85]);
       this.verticalOffsetThreshold = d3.scale.linear()
-        .domain([h1, end])
+        .domain([this.depth*5 + 45, 85])
         .range([pieCenterOffset,distanceToGo + pieCenterOffset]);
     } else {
       this.verticalOffsetThreshold = function(scroll) {
