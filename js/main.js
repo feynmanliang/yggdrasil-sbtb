@@ -848,7 +848,7 @@ var TreeNodeView = Backbone.View.extend({
 
     this.histogram = d3.select(this.g)
       .append("g")
-      .attr("class", "tree_histogram");
+      .attr("class", "tree-histogram");
 
     this.histogram
       .each(function() {
@@ -865,12 +865,20 @@ var TreeNodeView = Backbone.View.extend({
     // Pie Chart
     this.pieChartLayer = d3.select(this.g)
       .append("g")
-      .attr("class", "tree_pie")
+      .attr("class", "tree-pie")
       .attr("opacity", 0);
 
-    this.pieChartLayer.append("path")
+    var path = this.pieChartLayer.append("path")
       .attr("fill", "none")
-      .attr("stroke", "#555555");
+
+    if (!args.links) {
+      path
+      .attr("stroke-dasharray", "6,5")
+      .attr("stroke", "#666666");
+    } else {
+      path
+      .attr("stroke", "#000000");
+    }
 
     this.pieChart = new TreePieView({
       g: this.pieChartLayer,
@@ -890,7 +898,8 @@ var TreeNodeView = Backbone.View.extend({
 
     this.label = d3.select(this.g)
       .append("text")
-      .attr("font-size", 10)
+      .attr("font-size", 12)
+      .attr("font-weight", 600)
       .attr("fill", "#555555")
       .attr("text-anchor", "middle");
 
@@ -918,32 +927,13 @@ var TreeNodeView = Backbone.View.extend({
       });
     });
 
-    var pre = this.start - windowHeight * 1;
-    var start = this.start - windowHeight * 0.5;
-
-    if(this.depth === 0) {
-      pre -= windowHeight * 1.1;
-      start -= windowHeight * 1.1;
-    }
-
-    if(this.depth === 1) {
-      pre -= windowHeight * 0.5;
-      start -= windowHeight * 0.5;
-    }
-
-    var end = this.end - windowHeight * 1;
-    var after = end + 1;
-    var vunit = (end - start - windowHeight * 0.4) / (this.maxDepth + 1);
-    var h1 = start + vunit * this.node.depth;
-    var h2 = h1 + vunit;
-
     var domain = [
       0 + 45,
       0 + 45, // both off
       2 + 45 + this.depth*5, // pie on
       6 + 45 + this.depth*5, // pie off, histogram on
-      80,
-      85,
+      7 + 45 + this.depth*5,
+      11 + 45 + this.depth*5, // histogram faded
     ]
 
     // Histogram Threshold
@@ -1008,7 +998,7 @@ var TreeNodeView = Backbone.View.extend({
       .attr("transform", "translate(0,"+this.verticalOffset+")");
 
     this.pieChartLayer.select("path")
-      .attr("opacity", this.histogramOpacity)
+      .attr("opacity", this.pieOpacity)
       .attr("d", function() {
         var x1 = 0;
         var y1 = 0;
@@ -1063,11 +1053,11 @@ var DecisionTreeView = Backbone.View.extend({
 
     var nodeLinks = {};
 
-    this.links = this.links_layer.selectAll(".tree_link")
+    this.links = this.links_layer.selectAll(".tree-link")
       .data(this.tree.links)
       .enter()
         .append("path")
-        .attr("class", "tree_link")
+        .attr("class", "tree-link")
         .attr("stroke", "#000000")
         .attr("fill", "none")
         .each(function(d) {

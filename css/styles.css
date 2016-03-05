@@ -1,16 +1,17 @@
 /* Import Lato */
-@import url(https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic,900,900italic);
+@import url(https://fonts.googleapis.com/css?family=Lato:300,400,700,400italic,700italic,900,900italic);
 
 /* Import Raleway */
 @import url(https://fonts.googleapis.com/css?family=Raleway:400,500,300,600,700,200italic,300italic,400italic,500italic,600italic,700italic,200);
 
 body {
+  font-size: 100%;
   background: white;
   font-family: 'Raleway', sans-serif;
 }
 
 section {
-  background: rgb(248,240,239);
+  background: rgb(252,241,240);
   text-align: left;
   color: #333;
   padding-left: 10%;
@@ -55,8 +56,8 @@ section {
 
 .image-center img {
   position: absolute;
-  top:0;
-  bottom:0;
+  top: 0;
+  bottom: 0;
   margin:auto;
 }
 
@@ -75,16 +76,16 @@ section {
 .full {
   background: rgb(255,255,255);
   padding: 0;
-  padding-top:2em;
+  padding-top: 2em;
 }
 
 .full-image {
-  padding-top:5em;
+  padding-top: 5em;
 }
 
 h1 {
   font-family: 'Lato', sans-serif;
-  font-size: 150%;
+  font-size: 1.5em;
   line-height: 1.2em;
   margin-top: 0;
   margin-bottom: 0;
@@ -109,12 +110,12 @@ ul {
 }
 
 li {
-  font-size: 90%;
+  font-size: 0.9em;
   margin-bottom: 1%;
 }
 
 sub {
-  font-size: 50%;
+  font-size: 0.5em;
 }
 
 #follow {
@@ -147,7 +148,7 @@ sub {
 
 .title {
   font-style: 'Lato', sans-serif;
-  font-size: 220%;
+  font-size: 2em;
   text-align: center;
   line-height: 1.0em;
 }
@@ -155,9 +156,9 @@ sub {
 .footer {
   position: absolute;
   bottom: 2.5em;
-  left: 0.5em;
+  left: 0.35em;
   display: inline-block;
-  font-size: 50%;
+  font-size: 0.5em;
 }
 
 .right-corner {
@@ -232,10 +233,15 @@ table td {
 .author {
   margin: auto;
   font-family: 'Raleway', sans-serif;
-  font-size: 140%;
+  font-size: 1.35em;
   font-weight: 300;
 }
 
+.tree-pie, .tree-histogram, .tree-link {
+  transition: opacity 0.2s;
+}
+
+/*
 pre {
     font-size: 30px;
     line-height: 40px;
@@ -248,4 +254,4 @@ pre code {
     border-radius: 12px;
     background: none;
     padding: none;
-}
+}*/
