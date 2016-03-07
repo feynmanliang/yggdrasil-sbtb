@@ -1,12 +1,11 @@
 /* Import Lato */
-@import url(https://fonts.googleapis.com/css?family=Lato:300,400,700,400italic,700italic,900,900italic);
+@import url(https://fonts.googleapis.com/css?family=Lato:300,400,700,400italic,700italic);
 
 /* Import Raleway */
 @import url(https://fonts.googleapis.com/css?family=Raleway:400,500,300,600,700,200italic,300italic,400italic,500italic,600italic,700italic,200);
 
 body {
   font-size: 100%;
-  background: white;
   font-family: 'Raleway', sans-serif;
 }
 
@@ -85,6 +84,7 @@ section {
 
 h1 {
   font-family: 'Lato', sans-serif;
+  font-weight: 700;
   font-size: 1.5em;
   line-height: 1.2em;
   margin-top: 0;
@@ -130,7 +130,6 @@ sub {
 }
 
 .emph {
-  font-family:'Raleway';
   font-style: italic;
   font-weight: 600;
 }
@@ -147,7 +146,6 @@ sub {
 
 
 .title {
-  font-style: 'Lato', sans-serif;
   font-size: 2em;
   text-align: center;
   line-height: 1.0em;
@@ -232,7 +230,6 @@ table td {
 
 .author {
   margin: auto;
-  font-family: 'Raleway', sans-serif;
   font-size: 1.35em;
   font-weight: 300;
 }
