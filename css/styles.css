@@ -35,7 +35,6 @@ section {
   flex-grow: 1;
   /*justify-content: center;*/
   width: 47%;
-  resize: vertical;
   overflow: auto;
   padding-left: 0;
   padding-right: 3%;
@@ -105,7 +104,6 @@ h3 {
 
 ul {
   margin: 0;
-  resize: vertical;
   overflow: auto;
 }
 
