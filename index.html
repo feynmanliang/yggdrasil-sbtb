@@ -56,17 +56,17 @@
     <div class='container' style='flex-wrap: nowrap;'>
       <div style='padding-right: 0; margin-right: -2.8em; font-size: 0.75em; line-height: 1.2em;'>
         <p>
-        Suppose you are trying to predict whether a home is located in <span class='emph tree-green'>San Francisco</span> or <span class='emph tree-blue'>New York</span>.
+        Suppose you are trying to predict whether a home is located in <span class='emph italic tree-green'>San Francisco</span> or <span class='emph italic tree-blue'>New York</span>.
         </p>
         <p>
-        A decision tree <span class='emph'>greedily</span> finds a series of decision points in the dataset and recursively splits the data into <span class='emph'>homogenous partitions</span>.
+        A decision tree <span class='emph italic'>greedily</span> finds a series of decision points in the dataset and recursively splits the data into <span class='emph'>homogenous partitions</span>.
         </p>
         <p>
-        Decision trees are <span class='emph'>widely used</span> in machine learning for several reasons:
+        Decision trees are <span class='emph italic'>widely used</span> in machine learning for several reasons:
           <ol>
-            <li><u>Arbitrarily expressive</u>: can (theoretically) model any statistical relationship in the data</li>
-            <li><u>Easily tunable</u>: only one hyperparameter to tune (max. depth of tree)</li>
-            <li><u>Natural feature support</u>: ordinal and categorical features require no pre-processing</li>
+            <li><u>Arbitrarily expressive:</u> can (theoretically) model any statistical relationship in the data</li>
+            <li><u>Easily tunable:</u> only one hyperparameter to tune (max. depth of tree)</li>
+            <li><u>Natural feature support:</u> ordinal and categorical features require no pre-processing</li>
           </ol>
         </p>
       </div>
@@ -79,12 +79,12 @@
     <div class='container'>
       <div class='left'>
         <ul>
-          <li>Partition training set <span class='emph'>by row</span></li>
+          <li>Partition training set <span class='emph italic'>by row</span></li>
           <li>To compute the split for a given node:</li>
             <ul>
-              <li>Each worker computes sufficient statistics on the subset of the training data available to it</li>
-              <li>To limit communication, workers only consider $B$ thresholds, instead of $n+1$</li>
-              <li>The master aggregates the statistics, picks the best feature (and threshold) to split on</li>
+              <li>Each worker computes sufficient statistics on the subset of training data available to it</li>
+              <li>Since data is partitioned by row, workers must compute statistics <span class='emph italic'>for all features</span></li>
+              <li>The master aggregates the statistics, then picks the best feature (and threshold) to split on</li>
             </ul>
           <li><span class='highlight'>Communication cost:</span> $O(2^DkpB)$</li>
         </ul>
@@ -107,11 +107,19 @@
     </section>
     
     <section>
-    <h1>Distributed Decision Trees: The Classic Approach (<a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a>)</h1>
+    <h1>The Problem with Partitioning by Row</h1>
     <div class='container'>
-      <p>Because only $B$ thresholds are considered, optimal split may not always be found, particularly for continuous features!</br></br>
-      <span class='highlight'>Key takeaway:</span> <span class='emph incorrect'>Partitioning by row 1) introduces a tradeoff between accuracy and runtime efficiency; and 2) asks the user to tune an additional hyperparameter</span>
-      </p>
+      <div class='left'>
+        <ul>
+          <li>To limit communication, workers only consider $B$ thresholds, instead of $n+1$. The thresholds are found by computing a histogram per feature at the beginning of the algorithm.</li>
+          <li>This means that the optimal split may not always be found, especially for continuous features!</li>
+          <li><span class='highlight'>Key takeaway:</span> <span class='emph incorrect'>Partitioning by row 1) introduces a tradeoff between accuracy and runtime efficiency; and 2) asks the user to tune an additional hyperparameter $B$</span></li>
+        </ul>
+      </div>
+      <div class='right-image'>
+        <img src='images/planet-paper-excerpt.png' width="85%"></img>
+        <div class='caption' style='padding-right: 15%;'>Excerpt from page 5 of the <a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a> paper</div>
+      </div>
     </div>
     <div class='right-corner'>
       <div class='table-label'>Notation</div>
@@ -129,12 +137,12 @@
     <section>
     <h1>The New Approach: Yggdrasil</h1>
     <div class='container'>
-      <div class='left'>
+      <div class='left' style='padding-right: 0;'>
         <ul>
-          <li>Partition training set <span class='emph'>by column</span></li>
+          <li>Partition training set <span class='emph italic'>by column</span></li>
           <li>For each node:</li>
             <ul>
-              <li>Each worker computes sufficient statistics on <i>all of its local features</i> and sends the best feature
+              <li>Each worker computes sufficient statistics on all of its <span class='emph italic'>local features</span> and sends the best feature
               (and threshold) to the master</li>
               <li>The master picks the globally best feature to split on from the $k$ candidates</li>
             </ul>
@@ -201,7 +209,7 @@
     <div class='container'>
       <div class='center'>
         <img src='images/accuracy.svg' width="50%"></img>
-        <div class='caption'>$n=1\times 10^3, k=1, D=p$. Synthetic data generated from $\mathcal{U}[0,1]$.</div>
+        <div class='caption' style='padding-left: 30%; padding-right: 30%;'>$n=1\times 10^3, k=1, D=p$. Synthetic data generated from $\mathcal{U}[0,1]$.</div>
       </div>
       <div class='center'><span class='highlight'>Key takeaway:</span> <span class='emph correct'>Yggdrasil is more accurate than PLANET for continuous-feature datasets with small $B$ (i.e. $B \leq 8$)</span></div>
     </div>
@@ -228,7 +236,7 @@
       </div>
       <div class='right-image'>
         <img src='images/communication.svg' width="100%"></img>
-        <div class='caption'>$n=2\times 10^6, k=16, B=32$ (Note: For Yggdrasil, communication cost is independent of $p$!)</div>
+        <div class='caption' style='padding-left: 20%; padding-right: 20%;'>$n=2\times 10^6, k=16, B=32$ (Note: For Yggdrasil, communication cost is independent of $p$!)</div>
       </div>
       <div class='center'><span class='highlight'>Key takeaway:</span> <span class='emph correct'>Empirical results match the expected tradeoffs</span></div>
     </div>
@@ -315,6 +323,16 @@
     var footerURL = "https://github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk";
     d3.selectAll("section").append("div").attr("class", "footer");
     d3.selectAll("div.footer").append("a").attr("href", footerURL).text("View on GitHub");
+
+//    var footer = $('.footer');
+//    var height = footer.height();
+//    footer.css('bottom', 4*height + 'px');
+
+//    $(window).on("resize", function() {
+//      var footer = $('.footer');
+//      var height = footer.height();
+//      footer.css('bottom', height + 'px');
+//    });
 
     // every link opens a new tab
     d3.selectAll("a").attr("target", "_blank")
