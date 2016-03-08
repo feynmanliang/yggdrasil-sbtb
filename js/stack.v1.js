@@ -1,3 +1,21 @@
+(function(namespace) { // Closure to protect local variable "var hash"
+    _hashReplaced = true;
+    if ('replaceState' in history) { // Yay, supported!
+        namespace.replaceHash = function(newHash) {
+            if (('' + newHash).charAt(0) !== '#') newHash = '#' + newHash;
+            history.replaceState('', '', newHash);
+        }
+    } else {
+        var hash = location.hash;
+        namespace.replaceHash = function(newHash) {
+            if (location.hash !== hash) history.back();
+            location.hash = newHash;
+        };
+    }
+})(window);
+
+_hashReplaced = false;
+
 function stack() {
   var stack = {},
       size = [screen.width, screen.height],
@@ -22,7 +40,6 @@ function stack() {
   var body = d3.select("body")
       .style("margin", 0)
       .style("padding", 0)
-
 
   if (touchy) {
     section
@@ -170,6 +187,7 @@ function stack() {
       }
       i = i1;
     }
+    window.replaceHash(i);
 
     dispatchEvent({type: "scroll", offset: y = y1}, i);
   }
@@ -224,7 +242,32 @@ function stack() {
     return arguments.length ? (fontSize = +_, resize(), stack) : fontSize;
   };
 
+  stack.slideNumber = function() {
+    var slide = parseInt(window.location.hash.replace('#', ''));
+    if (isNaN(slide)) {
+      slide = i;
+    } else if (slide < 0) {
+      slide = 0;
+    } else if (slide >= n) {
+      slide = n-1;
+    }
+    if (slide === i) {
+      window.replaceHash(slide);
+    }
+    scrollTo(0, slide*windowHeight);
+  }
+
   d3.rebind(stack, dispatch, "on");
+
+  $(window).on('hashchange', function() {
+    if (_hashReplaced) {
+      _hashReplaced = false;
+      return;
+    }
+    stack.slideNumber();
+  });
+
+  stack.slideNumber();
 
   return stack;
 }
