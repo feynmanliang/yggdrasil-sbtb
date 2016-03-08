@@ -771,7 +771,6 @@ var TreeNodeView = Backbone.View.extend({
 
       var distanceToGo = (this.maxDepth - this.depth) * (windowHeight * 0.45) / this.maxDepth;
 
-      console.log([this.depth*5 + 45, 85]);
       this.verticalOffsetThreshold = d3.scale.linear()
         .domain([this.depth*5 + 45, 85])
         .range([pieCenterOffset,distanceToGo + pieCenterOffset]);
