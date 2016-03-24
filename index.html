@@ -347,7 +347,6 @@
 
     function refollow() {
       var scroll =  (1 - (decisionTreeIndex + (1 - mystack.scrollRatio()) / 2 - d3.event.offset)) * 100;
-      console.log("scroll top: " + scroll + "%");
       DecisionTree.handleScroll(scroll);
     }
 

@@ -1,6 +1,11 @@
 (function(namespace) { // Closure to protect local variable "var hash"
     _hashReplaced = true;
-    if ('replaceState' in history) { // Yay, supported!
+    var isLocal = window.location.href.indexOf('file:') > -1;
+    if (isLocal) {
+        namespace.replaceHash = function(newHash) {
+          location.hash = newHash;
+        }
+    } else if ('replaceState' in history) { // Yay, supported!
         namespace.replaceHash = function(newHash) {
             if (('' + newHash).charAt(0) !== '#') newHash = '#' + newHash;
             history.replaceState('', '', newHash);
