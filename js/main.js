@@ -919,9 +919,10 @@ var DecisionTreeView = Backbone.View.extend({
     var v = this;
 
     var windowHeight = $window.height();
+    var windowWidth = $window.width();
 
-    this.width = this.$el.parent().width() * 0.8;
-    this.height = windowHeight * 0.8;
+    this.height = Math.min(windowHeight * 0.7, 650);
+    this.width = Math.min(windowWidth * 0.6 * 0.90, 650 * 1.4);
 
     this.innerHeight = this.height - windowHeight * 0.15;
 
@@ -962,7 +963,8 @@ var DecisionTreeView = Backbone.View.extend({
 
     this.svg
       .attr("width", this.width)
-      .attr("height", this.height);
+      .attr("height", this.height)
+      .style("padding", "25px 0");
 
     this.nodes.each(function(d) {
       d3.select(this).attr("transform", function() {
@@ -991,6 +993,7 @@ var DecisionTreeView = Backbone.View.extend({
       });
     });
   },
+
   handleScroll: function(scroll) {
     this.nodes.each(function() {
       this.view.handleScroll(scroll);

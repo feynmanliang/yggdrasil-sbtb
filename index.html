@@ -1,375 +1,471 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
+
   <head>
-    <title>Yggdrasil: Faster Decision Trees using Column Partitioning in Spark</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <!--<link href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css" rel="stylesheet" />-->
-    <link href="css/styles.css" rel="stylesheet" />
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
-        "HTML-CSS": { scale: 50, linebreaks: { automatic: true } }, 
-      });
+
+    <title>Yggdrasil: Faster Decision Trees using Column Partitioning in Spark</title>
+
+    <meta name="description" content="Spark Summit SF 2016 Yggdrasil Presentation">
+    <meta name="author" content="Firas Abuzaid">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/yggdrasil.css" id="theme">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
     </script>
-    <script src="js/jquery.min.js"></script>
-    <script src="js/d3.v3.min.js"></script>
-    <script src="js/stack.v1.js"></script>
-    <script src="js/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <style type="text/css">
+    </style>
   </head>
+
   <body>
+    <div class="reveal">
 
-    <section>
-    <h1 class='title'>Yggdrasil:<sub><a href="https://www.youtube.com/watch?v=undaZKGe578">1</a>,<a href="https://en.wikipedia.org/wiki/Yggdrasil">2</a></sub> Faster Decision Trees using Column Partitioning in Spark</h1>
-    <table align='center' class='author'>
-      <tr>
-        <td>Firas Abuzaid</td>
-        <td>Joseph Bradley</td>
-      </tr>
-      <tr>
-        <td>Feynman Liang</td>
-        <td>Peter Cnudde</td>
-      </tr>
-      <tr>
-        <td>Hirakendu Das</td>
-        <td>Andrew Feng</td>
-      </tr>
-      <tr>
-        <td>Lee Yang</td>
-        <td>Matei Zaharia</td>
-      </tr>
-      <tr>
-        <td class='center' colspan='2'>Ameet Talwalkar</td>
-      </tr>
-    </table>
-    <div style='text-align: center;'>
-      <img src='images/databricks.png' width="30%"></img>
-      <img src='images/csail.gif' width="15%"></img>
-      <img src='images/yahoo-logo.png' width="30%"></img>
-    </div>
-    </section>
+      <!-- This shows up on every slide -->
+      <div class='footer'>
+        <a href="https://github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk">View on GitHub</a>
+      </div>
+      
+      <!--
+        This shows up on every slide that is
+        annotated with data-state='notation'
+      -->
+      <div class='header'>
+        <div>Notation</div>
+        \begin{array}{|c|c|}
+        \hline
+        n & \text{# instances} \\ \hline
+        p & \text{# features} \\ \hline
+        D & \text{max. depth of tree} \\ \hline
+        B & \text{# bins to use in PLANET} \\ \hline
+        k & \text{# workers} \\ \hline
+        \end{array}
+      </div>
 
-    <section id="tree">
-    <h1>A (Brief) Decision Tree Tutorial<sub><a href="http://www.r2d3.us/visual-intro-to-machine-learning-part-1/">3</a></sub></h1>
-    <div class='container' style='flex-wrap: nowrap;'>
-      <div style='padding-right: 0; margin-right: -2.8em; font-size: 0.75em; line-height: 1.2em;'>
-        <p>
-        Suppose you are trying to predict whether a home is located in <span class='emph italic tree-green'>San Francisco</span> or <span class='emph italic tree-blue'>New York</span>.
-        </p>
-        <p>
-        A decision tree <span class='emph italic'>greedily</span> finds a series of decision points in the dataset and recursively splits the data into <span class='emph'>homogenous partitions</span>.
-        </p>
-        <p>
-        Decision trees are <span class='emph italic'>widely used</span> in machine learning for several reasons:
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section>
+          <h1>
+            Yggdrasil:<sub><a
+                href="https://www.youtube.com/watch?v=undaZKGe578">1</a>, <a
+                href="https://en.wikipedia.org/wiki/Yggdrasil">2</a></sub> Faster
+            Decision Trees using Column Partitioning in Spark
+          </h1>
+          <table align='center' class='author'>
+            <tr>
+              <td>Firas Abuzaid</td>
+              <td>Joseph Bradley</td>
+            </tr>
+            <tr>
+              <td>Feynman Liang</td>
+              <td>Peter Cnudde</td>
+            </tr>
+            <tr>
+              <td>Hirakendu Das</td>
+              <td>Andrew Feng</td>
+            </tr>
+            <tr>
+              <td>Lee Yang</td>
+              <td>Matei Zaharia</td>
+            </tr>
+            <tr>
+              <td align='center' colspan='2'>Ameet Talwalkar</td>
+            </tr>
+          </table>
+          <div style='margin-top: 25px;'>
+            <img src='images/databricks.png' width="30%"></img>
+            <img src='images/csail.gif' width="15%"></img>
+            <img src='images/yahoo-logo.png' width="30%"></img>
+          </div>
+        </section>
+
+        <section data-state='tree' id='tree' style='text-align: left;'>
+          <h2>A (Brief) Decision Tree Tutorial<sub><a href="http://www.r2d3.us/visual-intro-to-machine-learning-part-1/">3</a></sub></h2>
+          <div style='float: left; width: 25%;'>
+            <p>
+            Suppose you are trying to predict whether a home is located in
+            <span class='emph italic tree-green'>San Francisco</span> or <span
+              class='emph italic tree-blue'>New York</span>
+            </p>
+          </div>
+          <div id='decision-tree' style='float: right; width: 75%;'>
+          </div>
+          <aside class='notes'>
+          <p>
+          A decision tree <span class='emph italic'>greedily</span> finds a
+          series of decision points in the dataset and recursively splits the
+          data into <span class='emph'>homogenous partitions</span>.
+          </p>
+          Decision trees are widely used in machine learning for several reasons:
           <ol>
             <li><u>Arbitrarily expressive:</u> can (theoretically) model any statistical relationship in the data</li>
             <li><u>Easily tunable:</u> only one hyperparameter to tune (max. depth of tree)</li>
             <li><u>Natural feature support:</u> ordinal and categorical features require no pre-processing</li>
           </ol>
-        </p>
-      </div>
-      <div class='right' style='width: 69%; padding-left: 0;' id="decision-tree"></div>
-    </div>
-    </section>
+          </aside>
+        </section>
 
-    <section>
-    <h1>Distributed Decision Trees: The Classic Approach (<a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a>)</h1>
-    <div class='container'>
-      <div class='left'>
-        <ul>
-          <li>Partition training set <span class='emph italic'>by row</span></li>
-          <li>To compute the split for a given node:</li>
+        <section data-state='notation' style='text-align: left;'>
+          <h1>
+            Distributed Decision Trees: The Classic Approach
+            (<a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a>)
+          </h1>
+          <div>
+            <div style='float: left; width: 49%;'>
+              <ul>
+                <li>Partition training set <span class='emph italic'>by row</span></li>
+                <li class='fragment'>Each worker computes sufficient statistics on subset of training data</li>
+                <li class='fragment'>Since data partitioned by row, workers must compute statistics <span class='emph italic'>for all features</span></li>
+                <li class='fragment'><span class='highlight'>Communication cost:</span> $O(2^DkpB)$</li>
+              </ul>
+            </div>
+            <div style='float: right; width: 49%'>
+              <img data-src='images/planet-diagram.png' width="100%"></img>
+            </div>
+          </div>
+
+          <aside class='notes'>
+          <ul>
+            <li>To compute the split for a given node:</li>
             <ul>
               <li>Each worker computes sufficient statistics on the subset of training data available to it</li>
               <li>Since data is partitioned by row, workers must compute statistics <span class='emph italic'>for all features</span></li>
               <li>The master aggregates the statistics, then picks the best feature (and threshold) to split on</li>
             </ul>
-          <li><span class='highlight'>Communication cost:</span> $O(2^DkpB)$</li>
-        </ul>
-      </div>
-      <div class='right-image'>
-        <img src='images/planet-diagram.png' width="92%"></img>
-      </div>
-    </div>
-    <div class='right-corner'>
-      <div class='table-label'>Notation</div>
-      \begin{array}{|c|c|}
-      \hline
-      n & \text{# instances} \\ \hline
-      p & \text{# features} \\ \hline
-      D & \text{max. depth of tree} \\ \hline
-      B & \text{# bins to use in PLANET} \\ \hline
-      k & \text{# workers} \\ \hline
-      \end{array}
-    </div>
-    </section>
-    
-    <section>
-    <h1>The Problem with Partitioning by Row</h1>
-    <div class='container'>
-      <div class='left'>
-        <ul>
-          <li>To limit communication, workers only consider $B$ thresholds, instead of $n+1$. The thresholds are found by computing a histogram per feature at the beginning of the algorithm.</li>
-          <li>This means that the optimal split may not always be found, especially for continuous features!</li>
-          <li><span class='highlight'>Key takeaway:</span> <span class='emph incorrect'>Partitioning by row 1) introduces a tradeoff between accuracy and runtime efficiency; and 2) asks the user to tune an additional hyperparameter $B$</span></li>
-        </ul>
-      </div>
-      <div class='right-image'>
-        <img src='images/planet-paper-excerpt.png' width="85%"></img>
-        <div class='caption' style='padding-right: 15%;'>Excerpt from page 5 of the <a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a> paper</div>
-      </div>
-    </div>
-    <div class='right-corner'>
-      <div class='table-label'>Notation</div>
-      \begin{array}{|c|c|}
-      \hline
-      n & \text{# instances} \\ \hline
-      p & \text{# features} \\ \hline
-      D & \text{max. depth of tree} \\ \hline
-      B & \text{# bins to use in PLANET} \\ \hline
-      k & \text{# workers} \\ \hline
-      \end{array}
-    </div>
-    </section>
+          </ul>
+          </aside>
+        </section>
 
-    <section>
-    <h1>The New Approach: Yggdrasil</h1>
-    <div class='container'>
-      <div class='left' style='padding-right: 0;'>
-        <ul>
-          <li>Partition training set <span class='emph italic'>by column</span></li>
-          <li>For each node:</li>
+        <section data-state='notation' style="text-align: left;">
+          <h1>The Problem with Partitioning by Row</h1>
+          <div>
+            <div style='float: left; width: 49%;'>
+              <ul>
+                <li>To limit communication, workers only consider $B$ thresholds, instead of $n-1$</li>
+                <li>Optimal split may not always be found!</li>
+                <li class='fragment'><span class='highlight'>Key takeaway:</span>
+                <span class='incorrect'><br/>Partitioning by row
+                  <ol>
+                    <li>introduces a tradeoff between accuracy and runtime efficiency</li>
+                    <li>asks the user to tune an additional hyperparameter $B$</li>
+                  </ol>
+                </span>
+                </li>
+              </ul>
+            </div>
+            <div style='float: right; width: 49%'>
+              <img data-src='images/planet-paper-excerpt.png' width="100%"></img>
+              <div class='caption'>Excerpt from page 5 of the <a
+                  href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a>
+                paper</div>
+            </div>
+          </div>
+          <aside class="notes">
+          <ul>
+            <li>The thresholds are found by computing a histogram per feature at the beginning of the algorithm.</li>
+            <li>This means that the optimal split may not always be found, especially for continuous features!</li>
+          </ul>
+          </aside>
+        </section>
+
+        <section data-state='notation' style="text-align: left;">
+          <h1>The New Approach: Yggdrasil</h1>
+          <div>
+            <div style='float: left; width: 49%;'>
+              <ul>
+                <li>Partition training set <span class='emph italic'>by column</span></li>
+                <li class='fragment'>
+                  Each worker computes sufficient statistics on all of its
+                  <span class='emph italic'>local features</span>
+                  and sends the best feature to the master
+                </li>
+                <li class='fragment'>Same computational cost as before</li>
+                <li class='fragment correct'>No $B$ parameter; all thresholds considered</li>
+                <li class='fragment'><span class='highlight'>Communication cost:</span> $O(2^Dk + Dnk)$</li>
+              </ul>
+            </div>
+            <div style='float: right; width: 49%'>
+              <img data-src='images/yggdrasil-diagram.png' width="100%"></img>
+            </div>
+          </div>
+          <aside class='notes'>
+          <ul>
+            <li>For each node:</li>
             <ul>
-              <li>Each worker computes sufficient statistics on all of its <span class='emph italic'>local features</span> and sends the best feature
-              (and threshold) to the master</li>
               <li>The master picks the globally best feature to split on from the $k$ candidates</li>
             </ul>
-          <li>Same computational cost as before</li>
-          <li class='correct'>No $B$ parameter; all thresholds considered</li>
-          <li><span class='highlight'>Communication cost:</span> $O(2^Dk + Dnk)$</li>
-        </ul>
-      </div>
-      <div class='right-image'>
-        <img src='images/yggdrasil-diagram.png' width="85%"></img>
-      </div>
-    </div>
-    <div class='right-corner'>
-      <div class='table-label'>Notation</div>
-      \begin{array}{|c|c|}
-      \hline
-      n & \text{# instances} \\ \hline
-      p & \text{# features} \\ \hline
-      D & \text{max. depth of tree} \\ \hline
-      B & \text{# bins to use in PLANET} \\ \hline
-      k & \text{# workers} \\ \hline
-      \end{array}
-    </div>
-    </section>
+          </ul>
+          </aside>
+        </section>
 
-    <section>
-    <h1>Results: Real-world Datasets</h1>
-    <div class='container'>
-      <div class='left-image'>
-        <img src='images/mnist-8m.svg' width="100%"></img>
-        <div class='caption'>$k=16,B=32$</div>
-      </div>
-      <div class='right-image'>
-        <img src='images/yahoo.svg' width="100%"></img>
-        <div class='caption'>$k=16,B=32$</div>
-      </div>
-      <div class='center' style='width: 100%;'>
-        <div class='table-label' style='margin-bottom: -1%;'>Dataset Info</div>
-        <div id='dataset-info'>
-        \begin{array}{|c|c|}
-        \hline
-        \text{Dataset} & \text{# instances} & \text{# features} & \text{Size} & \text{Task} \\ \hline
-        \text{MNIST 8M} &  8.1 \times 10^6 & 784 & 18.2 \text{ GiB} & \text{classification} \\ \hline
-        \text{Yahoo!} &  2 \times 10^6 & 3500 & 52.2 \text{ GiB} & \text{regression} \\ \hline
-        \end{array}
-        </div>
-      </div>
-    </div>
-    <div class='right-corner'>
-      <div class='table-label'>Notation</div>
-      \begin{array}{|c|c|}
-      \hline
-      n & \text{# instances} \\ \hline
-      p & \text{# features} \\ \hline
-      D & \text{max. depth of tree} \\ \hline
-      B & \text{# bins to use in PLANET} \\ \hline
-      k & \text{# workers} \\ \hline
-      \end{array}
-    </div>
-    </section>
+        <section data-state='notation' style="text-align: left;">
+          <h1>Results: Real-world Datasets</h1>
+          <div style='float: left; width: 75%;'>
+            <img data-src='images/mnist-8m.svg' width='100%'></img>
+            <div class='caption'>$k=16,B=32$</div>
+          </div>
+          <div style='float: right; width: 25%; transform: translateY(100%);'>
+            <div style='font-size: 0.65em; padding-left: 2px;'>
+              Dataset Info:
+            </div>
+            <div class='dataset-info'>
+              \begin{array}{|c|c|}
+              \hline
+              n & 8.1 \times 10^6 \\ \hline
+              p & 784 \\ \hline
+              \text{Size} & 18.2 \text{ GiB} \\ \hline
+              \text{Task} & \text{classification} \\ \hline
+              \end{array}
+            </div>
+          </div>
+        </section>
 
-    <section>
-    <h1>Results: Accuracy</h1>
-    <div class='container'>
-      <div class='center'>
-        <img src='images/accuracy.svg' width="50%"></img>
-        <div class='caption' style='padding-left: 30%; padding-right: 30%;'>$n=1\times 10^3, k=1, D=p$. Synthetic data generated from $\mathcal{U}[0,1]$.</div>
-      </div>
-      <div class='center'><span class='highlight'>Key takeaway:</span> <span class='emph correct'>Yggdrasil is more accurate than PLANET for continuous-feature datasets with small $B$ (i.e. $B \leq 8$)</span></div>
-    </div>
-    <div class='right-corner'>
-      <div class='table-label'>Notation</div>
-      \begin{array}{|c|c|}
-      \hline
-      n & \text{# instances} \\ \hline
-      p & \text{# features} \\ \hline
-      D & \text{max. depth of tree} \\ \hline
-      B & \text{# bins to use in PLANET} \\ \hline
-      k & \text{# workers} \\ \hline
-      \end{array}
-    </div>
-    </section>
+        <section data-state='notation' style="text-align: left;">
+          <h1>Results: Real-world Datasets</h1>
+          <div style='float: left; width: 75%;'>
+            <img data-src='images/yahoo.svg' width="100%"></img>
+            <div class='caption'>$k=16,B=32$</div>
+          </div>
+          <div style='float: right; width: 25%; transform: translateY(100%);'>
+            <div style='font-size: 0.65em; padding-left: 2px;'>
+              Dataset Info:
+            </div>
+            <div class='dataset-info'>
+              \begin{array}{|c|c|}
+              \hline
+              n & 2 \times 10^6 \\ \hline
+              p & 3500 \\ \hline
+              \text{Size} & 52.2 \text{ GiB} \\ \hline
+              \text{Task} & \text{regression} \\ \hline
+              \end{array}
+            </div>
+          </div>
+        </section>
 
+        <section data-state='notation' style="text-align: left;">
+          <h1>Results: Accuracy</h1>
+          <div style='float: left; width: 75%;'>
+            <img data-src='images/accuracy.svg' width="100%"></img>
+            <div class='caption'>$n=1\times 10^3, k=1, D=p$. Synthetic data
+              generated from $\mathcal{U}[0,1]$</div>
+          </div>
+          <div style='float: right; width: 25%; transform: translateY(35%);'>
+            <span class='highlight'>Key takeaway:</span>
+            <span class='correct'>
+              Yggdrasil is more accurate than PLANET for continuous-feature
+              datasets with small $B$ (i.e. $B \leq 8$)
+            </span>
+          </div>
+        </section>
 
-    <section>
-    <h1>Results: Scalability</h1>
-    <div class='container'>
-      <div class='left-image'>
-        <img src='images/by-feature.svg' width="100%"></img>
-        <div class='caption'>$n=2\times 10^6, k=16, B=32$</div>
-      </div>
-      <div class='right-image'>
-        <img src='images/communication.svg' width="100%"></img>
-        <div class='caption' style='padding-left: 20%; padding-right: 20%;'>$n=2\times 10^6, k=16, B=32$ (Note: For Yggdrasil, communication cost is independent of $p$!)</div>
-      </div>
-      <div class='center'><span class='highlight'>Key takeaway:</span> <span class='emph correct'>Empirical results match the expected tradeoffs</span></div>
-    </div>
-    <div class='right-corner'>
-      <div class='table-label'>Notation</div>
-      \begin{array}{|c|c|}
-      \hline
-      n & \text{# instances} \\ \hline
-      p & \text{# features} \\ \hline
-      D & \text{max. depth of tree} \\ \hline
-      B & \text{# bins to use in PLANET} \\ \hline
-      k & \text{# workers} \\ \hline
-      \end{array}
-    </div>
-    </section>
+        <section data-state='notation' style="text-align: left;">
+          <h1>Results: Scalability</h1>
+          <div class='center'>
+            <img data-src='images/communication.svg' width="75%"></img>
+            <div class='caption'>$n=2\times 10^6, k=16, B=32$<br/>(Note: For Yggdrasil, communication cost is independent of $p$!)</div>
+          </div>
+        </section>
 
-    <section>
-    <h1>The Tradeoffs: Yggdrasil vs. PLANET</h1>
-    <div class='container'>
-      <div class='left-image'>
-        <img src='images/n-vs-p.svg' width="100%"></img>
-        <div class='caption'>$D=15,k=16,B=32$</div>
-      </div>
-      <div class='right-image'>
-        <img src='images/n-vs-d.svg' width="100%"></img>
-        <div class='caption'>$p=2500,k=16,B=32$</div>
-      </div>
-      <div class='center'><span class='highlight'>Key takeaway:</span> <span class='emph correct'>Yggdrasil is more efficient than PLANET for large $p$ and $D$</span></div>
-    </div>
-    <div class='right-corner'>
-      <div class='table-label'>Notation</div>
-      \begin{array}{|c|c|}
-      \hline
-      n & \text{# instances} \\ \hline
-      p & \text{# features} \\ \hline
-      D & \text{max. depth of tree} \\ \hline
-      B & \text{# bins to use in PLANET} \\ \hline
-      k & \text{# workers} \\ \hline
-      \end{array}
-    </div>
-    </section>
+        <section data-state='notation' style="text-align: left;">
+          <h1>Results: Scalability</h1>
+          <div style='float: left; width: 75%;'>
+            <img data-src='images/by-feature.svg' width="100%"></img>
+            <div class='caption'>$n=2\times 10^6, k=16, B=32$</div>
+          </div>
+          <div style='float: right; width: 25%; transform: translateY(75%);'>
+            <span class='highlight'>Key takeaway:</span>
+            <span class='correct'>Empirical results match the expected tradeoffs</span>
+          </div>
+        </section>
 
+        <section data-state='notation' style="text-align: left;">
+          <h1>The Tradeoffs: Yggdrasil vs. PLANET</h1>
+          <div class='center'>
+            <img data-src='images/n-vs-p.svg' width="75%"></img>
+            <div class='caption'>$D=15,k=16,B=32$</div>
+          </div>
+        </section>
 
-    <section>
-    <h1>Future work</h1>
-    <div class='container'>
-      <div class='left'>
-        <ul>
-          <li>Futher code improvements, publish as Spark package</li>
-            <ul>
-              <li>Potentially integrate with Spark MLlib v1.7</li>
-            </ul>
-          <li>Extend functionality further to support incremental updates, e.g. adding/removing features</li>
-        </ul>
-      </div>
-    </div>
-    </section>
+        <section data-state='notation' style="text-align: left;">
+          <h1>The Tradeoffs: Yggdrasil vs. PLANET</h1>
+          <div style='float: left; width: 70%;'>
+            <img data-src='images/n-vs-d.svg' width="100%"></img>
+            <div class='caption'>$p=2500,k=16,B=32$</div>
+          </div>
+          <div style='float: right; width: 30%; transform: translateY(60%);'>
+            <span class='highlight'>Key takeaway:</span>
+            <span class='correct'>
+              Yggdrasil is more efficient than PLANET for large $p$ and $D$
+            </span>
+          </div>
+        </section>
 
-    <section>
-    <div class='container'>
-      <div class='title center' style='position: absolute; top: 45%;'>THANKS!</div>
-    <div class='container'>
-    </section>
+        <section style="text-align: left;">
+          <h1>Future work</h1>
+          <div>
+            <div class='left'>
+              <ul>
+                <li>Futher code improvements, publish as Spark package</li>
+                <ul>
+                  <li>Potentially integrate with Spark MLlib v1.7</li>
+                </ul>
+                <li>Extend functionality further to support incremental updates, e.g. adding/removing features</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
-    <script src="js/tree-training-set-98.js"></script>
-    <script src="js/helpers.js"></script>
-    <script src="js/main.js"></script>
-  <script>
-    MathJax.Hub.Register.StartupHook("End",function () {
-      // needs to be set in a callback -- otherwise MathJax may override static styles
-      $(".right-corner").css("font-size","40%");
-      $("#dataset-info").css("font-size","70%");
-      $(".caption").css("font-size","75%");
-    });
+        <section>
+          <h1>THANKS!</h1>
+        </section>
 
-    // Append the following footer to each section:
-    // <div class='footer'>
-    //   <a href="https://github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk">
-    //     github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk
-    //   </a>
-    // </div>
-    var footerURL = "https://github.com/fabuzaid21/yggdrasil-spark-summit-sf-2016-talk";
-    d3.selectAll("section").append("div").attr("class", "footer");
-    d3.selectAll("div.footer").append("a").attr("href", footerURL).text("View on GitHub");
+        <script src="lib/js/head.min.js"></script>
+        <script src="lib/js/underscore-min.js"></script>
+        <script src="lib/js/jquery.min.js"></script>
+        <script src="lib/js/backbone-min.js"></script>
+        <script src="lib/js/d3.min.js"></script>
+        <script src="js/reveal.js"></script>
+        <script src="js/tree-training-set-98.js"></script>
+        <script src="js/helpers.js"></script>
+        <script src="js/main.js"></script>
+        <script>
+          // Full list of configuration options available at:
+          // https://github.com/hakimel/reveal.js#configuration
+          Reveal.initialize({
+            controls: false,
+            progress: true,
+            history: true,
+            center: true,
+            slideNumber: true,
+            mouseWheel: false,
+            transition: 'fade', // none/fade/slide/convex/concave/zoom
 
-//    var footer = $('.footer');
-//    var height = footer.height();
-//    footer.css('bottom', 4*height + 'px');
+            math: {
+              mathjax: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js',
+              config: 'TeX-AMS_HTML-full',  // See http://docs.mathjax.org/en/latest/config-files.html
+            },
 
-//    $(window).on("resize", function() {
-//      var footer = $('.footer');
-//      var height = footer.height();
-//      footer.css('bottom', height + 'px');
-//    });
+            // Optional reveal.js plugins
+            dependencies: [
+            { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+            // { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+            // { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+            // { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+            { src: 'plugin/zoom-js/zoom.js', async: true },
+            { src: 'plugin/math/math.js', async: true },
+            { src: 'plugin/notes/notes.js', async: true }
+            ]
+          });
 
-    // every link opens a new tab
-    d3.selectAll("a").attr("target", "_blank")
+          // every link opens a new tab
+          $('a').attr('target', '_blank');
 
-    var mystack = stack()
-    .on("activate", activate)
-    .on("deactivate", deactivate);
+          (function() {
+            var scroll = 45;
+            var removeBindings = function() {
+              document.removeEventListener('DOMMouseScroll', decisionTreeTutorialScrollBindings, false); // FF
+              document.removeEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
+              Reveal.configure({
+                keyboard : {}
+              });
+            };
+            var decisionTreeTutorialKeyBindings = function() {
+              DecisionTree.handleScroll(scroll);
+              var prev = function() {
+                scroll -= 5;
+                if (scroll <= 40) {
+                  removeBindings();
+                  Reveal.prev();
+                  return;
+                }
+                DecisionTree.handleScroll(scroll);
+              }
+              var next = function() {
+                scroll += 5;
+                if (scroll >= 100) {
+                  removeBindings();
+                  Reveal.next();
+                  return;
+                }
+                DecisionTree.handleScroll(scroll);
+              }
+              Reveal.configure({
+                keyboard: {
+                  // p, page up
+                  80: prev,
+                  33: prev,
+                  // h, left
+                  72: prev,
+                  37: prev,
+                  // k, up
+                  75: prev,
+                  38: prev,
+                  // n, page down
+                  78: next,
+                  34: next,
+                  // l, right
+                  76: next,
+                  39: next,
+                  // j, down
+                  74: next,
+                  40: next,
+                  // ENTER
+                  13: next,
+                  // SPACE
+                  32: next
+                }
+              });
+            };
+            var decisionTreeTutorialScrollBindings = function(e) {
+              console.log(e.deltaY);
+              scroll += e.deltaY / 10;
+              if (scroll <= 40) {
+                removeBindings();
+                Reveal.prev();
+                return;
+              } else if (scroll >= 100) {
+                removeBindings();
+                Reveal.next();
+                return;
+              }
+              DecisionTree.handleScroll(scroll);
+            };
 
-    var section = d3.selectAll("section"),
-    decisionTree = d3.select("#tree"),
-    decisionTreeIndex = section[0].indexOf(decisionTree.node());
+            var decisionTreeIndex = $('section').index($('#tree'));
+            Reveal.addEventListener( 'slidechanged', function(event) {
+              if (event.indexh === decisionTreeIndex) {
+                decisionTreeTutorialKeyBindings();
+                document.addEventListener('DOMMouseScroll', decisionTreeTutorialScrollBindings, false); // FF
+                document.addEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
+              } else {
+                removeBindings();
+              }
+            });
 
-    function refollow() {
-      var scroll =  (1 - (decisionTreeIndex + (1 - mystack.scrollRatio()) / 2 - d3.event.offset)) * 100;
-      DecisionTree.handleScroll(scroll);
-    }
+            // if we start on the 2nd slide, set up key bindings and scroll events
+            if (Reveal.getState().indexh === decisionTreeIndex) {
+                decisionTreeTutorialKeyBindings();
+                document.addEventListener('DOMMouseScroll', decisionTreeTutorialScrollBindings, false); // FF
+                document.addEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
+            }
 
-    function activate(d, i) {
-      /**
-       * Code to style left-hand scrollbar:
-       *
-       * var track = $('.indicator').children()
-       * track.css('height','15px')
-       * track.css('width','15px')
-       * track.css('border-radius','10px')
-       * track.css('background','none')
-       * track.css('background-color','rgb(255,255,255)')
-       * track.css('opacity', '0.5')
-       * track.css('margin-left', '5px')
-       **/
-      if (i === decisionTreeIndex) mystack.on("scroll.follow", refollow);
-    }
+          })();
+        </script>
 
-    function deactivate(d, i) {
-      if (i === decisionTreeIndex) mystack.on("scroll.follow", null);
-    }
-
-  </script>
-</body>
-</html>
+    </body>
+  </html>
