@@ -51,7 +51,7 @@
         \hline
         n & \text{# instances} \\ \hline
         p & \text{# features} \\ \hline
-        D & \text{max. depth of tree} \\ \hline
+        D & \text{max depth of tree} \\ \hline
         B & \text{# bins to use in PLANET} \\ \hline
         k & \text{# workers} \\ \hline
         \end{array}
@@ -96,14 +96,24 @@
 
         <section data-state='tree' id='tree' style='text-align: left;'>
           <h2>A (Brief) Decision Tree Tutorial<sub><a href="http://www.r2d3.us/visual-intro-to-machine-learning-part-1/">3</a></sub></h2>
-          <div style='float: left; width: 25%;'>
+          <div style='float: left; width: 35%;'>
             <p>
-            Suppose you are trying to predict whether a home is located in
-            <span class='emph italic tree-green'>San Francisco</span> or <span
-              class='emph italic tree-blue'>New York</span>
+            Suppose you're trying to predict whether a house is located in
+            <span class='emph italic tree-green'>San Francisco</span> or
+            <span class='emph italic tree-blue'>New York</span>
+            based on the following features:
+            <ul>
+              <li>price</li>
+              <li>sqft</li>
+              <li>price per sqft</li>
+              <li>year built</li>
+              <li>elevation</li>
+              <li># bathrooms</li>
+              <li># bedrooms</li>
+            </ul>
             </p>
           </div>
-          <div id='decision-tree' style='float: right; width: 75%;'>
+          <div id='decision-tree' style='float: right; width: 65%;'>
           </div>
           <aside class='notes'>
           <p>
@@ -114,7 +124,7 @@
           Decision trees are widely used in machine learning for several reasons:
           <ol>
             <li><u>Arbitrarily expressive:</u> can (theoretically) model any statistical relationship in the data</li>
-            <li><u>Easily tunable:</u> only one hyperparameter to tune (max. depth of tree)</li>
+            <li><u>Easily tunable:</u> only one hyperparameter to tune (max depth of tree)</li>
             <li><u>Natural feature support:</u> ordinal and categorical features require no pre-processing</li>
           </ol>
           </aside>
