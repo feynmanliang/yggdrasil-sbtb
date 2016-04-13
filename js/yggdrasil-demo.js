@@ -1,7 +1,10 @@
-const width = $(window).width() * 0.6;
-const height = $(window).height() * 0.6;
-
+// constants
+const width = $(window).width() * 0.7;
+const height = $(window).height() * 0.8;
 const K = 4; // num. workers
+const NODE_RADIUS = 70;
+const NODE_OFFSET = (width - 2*NODE_RADIUS*K) / (K + 1);
+const FEATURE_OFFSET = 30;
 const FEATURES = [
         "bath",
         "beds",
@@ -12,36 +15,42 @@ const FEATURES = [
         "year_built",
       ];
 
+var svg = d3.select('#yggdrasil-demo').append('svg')
+  .attr('width', width)
+  .attr('height', height);
+
 var nodeLabels = ['master'];
 for (var i = 0; i < K; ++i) {
   nodeLabels.push('worker');
 }
 
-nodeData = [FEATURES];
-for (var i = 0; i < K; ++i) {
-  nodeData.push([]);
+function getNodeCoordinates(index) {
+  if (index == 0) {
+    return {
+      x: (width / 2),
+      y: (1.1*NODE_RADIUS)
+    };
+  } else {
+    return {
+      x: ((index - 1)*(2*NODE_RADIUS + NODE_OFFSET) + NODE_RADIUS + NODE_OFFSET),
+      y: (height / 2 + NODE_RADIUS)
+    };
+  }
 }
 
-var svg = d3.select('#yggdrasil-demo').append('svg')
-  .attr('width', width)
-  .attr('height', height);
-
-function update(nodeLabels, data) {
+function createMasterAndWorkers(labels) {
   var nodes = svg.selectAll("g.node").data(nodeLabels);
 
   var newNodes = nodes.enter()
     .append("g")
     .attr('class', 'node')
     .attr("transform", function(d, i) {
-      if (i == 0) {
-        return "translate(" + (width / 2) + ", " +  (height / 4 - 50) + ")";
-      } else {
-        return "translate(" + (width / 6 + (i-1)*300) + ", " +  (height / 2 + 125) + ")";
-      }
+      var nodeCoords = getNodeCoordinates(i);
+      return "translate(" + nodeCoords.x + ", " +  nodeCoords.y + ")";
     });
 
   newNodes.append("circle")
-    .attr("r", 70)
+    .attr("r", NODE_RADIUS)
     .style("stroke", "#000")
     .style("fill", function(d, i) {
       if (i == 0) {
@@ -58,72 +67,70 @@ function update(nodeLabels, data) {
     .attr('dy', 10)
     .style('font-size', '0.7em')
     .text(function(d) { return d });
+}
 
+createMasterAndWorkers(nodeLabels);
 
-  var featureGroups = svg.selectAll("g.features").data(data);
+function update(featureData, partitions) {
+  var positionFeature = function(d, i) {
+    debugger;
+    var locInfo = partitions[i];
+    var nodeCoords = getNodeCoordinates(locInfo.node);
+    return "translate(" + nodeCoords.x + ", " +  (nodeCoords.y + 1.3*NODE_RADIUS + locInfo.index*FEATURE_OFFSET) + ")";
+  };
 
-  // featureGroups.transition()
-  //   .attr("transform", function(d, i) {
-  //     if (i == 0) {
-  //       return "translate(" + (width / 2) + ", " +  (height / 4 - 50) + ")";
-  //     } else {
-  //       return "translate(" + (width / 6 + (i-1)*300) + ", " +  (height / 2 + 125) + ")";
-  //     }
-  //   })
-  //   .duration(750)
-  //   .style("fill-opacity", 1);
+  var features = svg.selectAll('g.feature').data(featureData);
+  features.transition()
+    .attr('transform', positionFeature)
+    .duration(750)
+    .style('fill-opacity', 1);
 
-  featureGroups.enter().append("g")
-    .attr('class', 'features')
-    // .transition()
-    .attr("transform", function(d, i) {
-      if (i == 0) {
-        return "translate(" + (width / 2) + ", " +  (height / 4 - 5) + ")";
-      } else {
-        return "translate(" + (width / 6 + (i-1)*300) + ", " +  (height / 2 + 170) + ")";
-      }
-    });
-    // .duration(750)
-    // .style("fill-opacity", 1);
-
-  featureGroups.exit().remove();
-
-  var features = featureGroups.selectAll("g.feature text").data(_.identity);
-
-  features.enter().append("g")
+  features.enter().append('g')
     .attr('class', 'feature')
-    .attr("transform", function(d, i) {
-        return "translate(0, " +  (i*30) + ")";
-    })
-    .append("text")
+    .attr('transform', positionFeature)
+    .append('text')
     .attr('class', 'feature-label')
-    .attr("text-anchor", "middle")
+    .attr('text-anchor', 'middle')
     .style('font-size', '0.6em')
     .text(_.identity)
     .attr('fill', 'blue')
-    .attr("y", 0);
+    .attr('y', 0);
 
   features.exit().remove();
 }
 
+var allOnMaster = [];
+for (var i = 0; i < FEATURES.length; ++i) {
+  allOnMaster.push({
+    node: 0,
+    index: i
+  });
+}
+update(FEATURES, allOnMaster);
+
 // Divide up the features amongst the workers
-function partitionFeaturesToWorkers(nodeData) {
-  var featuresPerNode = _.chain(_.shuffle(FEATURES)).groupBy(function(element, index) {
-    return Math.floor(index % K);
-  }).toArray()
-  .value();
-
-  featuresPerNode.unshift([]);
-
-  return featuresPerNode;
-}
-
-update(nodeLabels, nodeData);
 function partition() {
-  nodeData = partitionFeaturesToWorkers(nodeData);
-  update(nodeLabels, nodeData);
+  console.log("calling partition!");
+  var features = _.shuffle(FEATURES);
+  console.log(features);
+  var partitionedToWorkers = [];
+  for (var i = 0; i < FEATURES.length; ++i) {
+    partitionedToWorkers.push({
+      node: Math.floor(i % K) + 1,
+      index: Math.floor(i / K)
+    });
+  }
+  update(features, partitionedToWorkers);
 }
-setTimeout(partition, 2000);
+setInterval(partition, 2000);
+
+
+
+
+
+
+
+
 
 // Data by columns
 var dataByColumns = _.object(FEATURES, _.map(FEATURES, function(feature) {
