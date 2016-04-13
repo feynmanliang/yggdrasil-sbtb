@@ -131,10 +131,10 @@
         </section>
 
         <section data-state='notation' style='text-align: left;'>
-          <h1>
+          <h2>
             Distributed Decision Trees: The Classic Approach
             (<a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf">PLANET</a>)
-          </h1>
+          </h2>
           <div>
             <div style='float: left; width: 49%;'>
               <ul>
@@ -162,7 +162,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>The Problem with Partitioning by Row</h1>
+          <h2>The Problem with Partitioning by Row</h2>
           <div>
             <div style='float: left; width: 49%;'>
               <ul>
@@ -194,7 +194,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>The New Approach: Yggdrasil</h1>
+          <h2>The New Approach: Yggdrasil</h2>
           <div>
             <div style='float: left; width: 49%;'>
               <ul>
@@ -224,7 +224,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>Results: Real-world Datasets</h1>
+          <h2>Results: Real-world Datasets</h2>
           <div style='float: left; width: 75%;'>
             <img data-src='images/mnist-8m.svg' width='100%'></img>
             <div class='caption'>$k=16,B=32$</div>
@@ -246,7 +246,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>Results: Real-world Datasets</h1>
+          <h2>Results: Real-world Datasets</h2>
           <div style='float: left; width: 75%;'>
             <img data-src='images/yahoo.svg' width="100%"></img>
             <div class='caption'>$k=16,B=32$</div>
@@ -268,7 +268,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>Results: Accuracy</h1>
+          <h2>Results: Accuracy</h2>
           <div style='float: left; width: 75%;'>
             <img data-src='images/accuracy.svg' width="100%"></img>
             <div class='caption'>$n=1\times 10^3, k=1, D=p$. Synthetic data
@@ -284,7 +284,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>Results: Scalability</h1>
+          <h2>Results: Scalability</h2>
           <div class='center'>
             <img data-src='images/communication.svg' width="75%"></img>
             <div class='caption'>$n=2\times 10^6, k=16, B=32$<br/>(Note: For Yggdrasil, communication cost is independent of $p$!)</div>
@@ -292,7 +292,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>Results: Scalability</h1>
+          <h2>Results: Scalability</h2>
           <div style='float: left; width: 75%;'>
             <img data-src='images/by-feature.svg' width="100%"></img>
             <div class='caption'>$n=2\times 10^6, k=16, B=32$</div>
@@ -304,7 +304,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>The Tradeoffs: Yggdrasil vs. PLANET</h1>
+          <h2>The Tradeoffs: Yggdrasil vs. PLANET</h2>
           <div class='center'>
             <img data-src='images/n-vs-p.svg' width="75%"></img>
             <div class='caption'>$D=15,k=16,B=32$</div>
@@ -312,7 +312,7 @@
         </section>
 
         <section data-state='notation' style="text-align: left;">
-          <h1>The Tradeoffs: Yggdrasil vs. PLANET</h1>
+          <h2>The Tradeoffs: Yggdrasil vs. PLANET</h2>
           <div style='float: left; width: 70%;'>
             <img data-src='images/n-vs-d.svg' width="100%"></img>
             <div class='caption'>$p=2500,k=16,B=32$</div>
@@ -326,7 +326,7 @@
         </section>
 
         <section style="text-align: left;">
-          <h1>Future work</h1>
+          <h2>Future work</h2>
           <div>
             <div class='left'>
               <ul>
@@ -442,8 +442,7 @@
               });
             };
             var decisionTreeTutorialScrollBindings = function(e) {
-              console.log(e.deltaY);
-              scroll += e.deltaY / 10;
+              scroll += e.deltaY / 10; // slow down scrolling by factor of 10
               if (scroll <= 40) {
                 removeBindings();
                 Reveal.prev();
