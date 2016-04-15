@@ -2,20 +2,22 @@
 const width = Math.min($(window).width() * 0.7, 1024);
 const height = Math.min($(window).height() * 0.8, 576);
 const K = 4; // num. workers
-const NODE_RADIUS = 60;
+const NODE_RADIUS = 50;
 const PADDING_TOP = 40;
 const PADDING_BOTTOM = 140;
-const PADDING_WIDTH = 140;
-const FEATURE_OFFSET = 65;
-const BAR_CHART_OFFSET = 5;
+const PADDING_WIDTH = 150;
+const FEATURE_OFFSET = 70;
+const BAR_CHART_OFFSET = 7;
+
+const NUM_SAMPLES = tree_data['samples'];
 const FEATURES = [
-        "bath",
-        "beds",
-        "elevation",
-        "price",
-        "price_per_sqft",
-        "sqft",
-        "year_built",
+        'bath',
+        'beds',
+        'elevation',
+        'price',
+        'price_per_sqft',
+        'sqft',
+        'year_built',
       ];
 
 var _isTargetFn = function(labels) {
@@ -32,40 +34,38 @@ var BarChart = Backbone.View.extend({
     this.labels = args.labels;
     this.parentG = args.g;
 
-    if (typeof args.split === "number" && !isNaN(args.split)) {
-      this.split = args.split;
-    } else {
-      this.split = null;
-    }
+    // if (typeof args.split === 'number' && !isNaN(args.split)) {
+    //   this.split = args.split;
+    // } else {
+    //   this.split = null;
+    // }
 
-    this.width = 100;
-    this.height = 35;
-    this.orientation = "HORIZONTAL";
+    this.height = FEATURE_OFFSET / 2;
+    this.orientation = 'HORIZONTAL';
 
-    this.barWidth = 0.75;
-    this.barGap = 0;
+    this.barWidth = 1.0;
+    this.barGap = 0.25;
     this.growth = 1;
 
     this.handleResize({
-      width: this.width,
       height: this.height
     });
 
-    this.cid = this.cid + "BarChart"
+    this.cid = this.cid + 'BarChart'
 
     this.rr = true;
+    // TODO: this should render when we navigate to the page
     R2D3Views.push(this);
   },
   handleResize: function(args) {
     _.extend(this, args);
 
-    this.valueEdge = this.width;
     this.magnitudeEdge = this.height;
 
     if (args.barWidth) { this.barWidth = args.barWidth; }
     if (args.barGap) { this.barGap = args.barGap; }
 
-    this.sectionWidth = this.barWidth * 2 + this.barGap;
+    this.sectionWidth = this.barWidth + this.barGap;
     this.isTargetPred = _isTargetFn(this.labels);
 
     var extent = d3.extent(this.data);
@@ -73,13 +73,11 @@ var BarChart = Backbone.View.extend({
       .domain([extent[0], extent[1]])
       .range([0, this.magnitudeEdge*this.growth]);
 
-    if (this.split) {
-      // If there's a split value, show it.
-
-      var v = this;
-
-      this.split_location = this.valueEdge / (extent[1] - extent[0]) * (this.split - extent[0]);
-    }
+    // if (this.split) {
+    //   // If there's a split value, show it.
+    //   var v = this;
+    //   this.split_location = this.valueEdge / (extent[1] - extent[0]) * (this.split - extent[0]);
+    // }
 
     this.rr = true;
   },
@@ -88,14 +86,14 @@ var BarChart = Backbone.View.extend({
     _.extend(this, args);
     var v = this;
 
-    // append new group for barChart, position it underneath the label
     // var bbox = this.g.getBBox();
+        //.attr('transform', 'translate(' + (bbox.width / 2 + BAR_CHART_OFFSET) + ',' + -1*bbox.height + ')');
 
+    // append new group for barChart, position it underneath the label
     if (!this.g) {
       this.g = d3.select(this.parentG).append('g')
         .attr('class', 'barChart')
-        .attr('transform', 'translate(' + (-3*NODE_RADIUS) + ',' + BAR_CHART_OFFSET + ')');
-        //.attr('transform', 'translate(' + (bbox.width / 2 + BAR_CHART_OFFSET) + ',' + -1*bbox.height + ')');
+        .attr('transform', 'translate(' + (-3.1*NODE_RADIUS) + ',' + BAR_CHART_OFFSET + ')');
     }
 
     this.selection = this.g.selectAll('.bin').data(this.data);
@@ -206,28 +204,28 @@ function getNodeCoordinates(index) {
 }
 
 function createMasterAndWorkers(labels) {
-  var nodes = svg.selectAll("g.node").data(nodeLabels);
+  var nodes = svg.selectAll('g.node').data(nodeLabels);
 
   var newNodes = nodes.enter()
-    .append("g")
+    .append('g')
     .attr('class', 'node')
-    .attr("transform", function(d, i) {
+    .attr('transform', function(d, i) {
       var nodeCoords = getNodeCoordinates(i);
-      return "translate(" + nodeCoords.x + ", " +  nodeCoords.y + ")";
+      return 'translate(' + nodeCoords.x + ', ' +  nodeCoords.y + ')';
     });
 
-  newNodes.append("circle")
-    .attr("r", NODE_RADIUS)
-    .style("stroke", "#000")
-    .style("fill", function(d, i) {
+  newNodes.append('circle')
+    .attr('r', NODE_RADIUS)
+    .style('stroke', '#000')
+    .style('fill', function(d, i) {
       if (i == 0) {
-        return "#f6f6f6";
+        return '#f6f6f6';
       } else {
-        return "#eaeaea";
+        return '#eaeaea';
       }
     });
 
-  newNodes.append("text")
+  newNodes.append('text')
     .attr('class', 'node-label')
     .attr('text-anchor', 'middle')
     .attr('dx', 0)
@@ -242,7 +240,7 @@ function update(featureData, partitions) {
   var positionFeature = function(d, i) {
     var locInfo = partitions[i];
     var nodeCoords = getNodeCoordinates(locInfo.node);
-    return 'translate(' + nodeCoords.x + ', ' +  (nodeCoords.y + 1.35*NODE_RADIUS + locInfo.index*FEATURE_OFFSET) + ')';
+    return 'translate(' + nodeCoords.x + ', ' +  (nodeCoords.y + 1.5*NODE_RADIUS + locInfo.index*FEATURE_OFFSET) + ')';
   };
 
   var features = svg.selectAll('g.feature').data(featureData);
@@ -266,7 +264,6 @@ function update(featureData, partitions) {
         key: d.featureName,
         data: d.featureValues,
         labels: d.labels,
-        split: 50
         // split: parseFloat(v.stats.split_point)
       });
     })
@@ -280,6 +277,49 @@ function update(featureData, partitions) {
     .attr('y', 0);
 
   features.exit().remove();
+}
+
+var dataIndexToColIndex = d3.map(_.range(250), function(d) {
+  return tree_training_set[d]['index'];
+});
+
+var ParseSplitsFromTreeData = function(tree_data, tree_stats) {
+  var queue = [tree_data];
+  var depthToSplits = d3.map();
+  while (queue.length > 0) {
+    var node = queue.shift();
+    var depth = node.depth;
+    var stat_node = tree_stats[node.id];
+    if (stat_node.has_children) {
+      var split_location = stat_node.split_location;
+      if (!depthToSplits.has(depth)) {
+        depthToSplits.set(depth, []);
+      }
+      depthToSplits.get(depth).push(split_location);
+
+      for (var i = 0; i < node.children.length; ++i) {
+        queue.push(node.children[i]);
+      }
+    }
+  }
+  return depthToSplits;
+}
+
+var depthToSplits = ParseSplitsFromTreeData(tree_data, tree_stats);
+
+function getBitVectorForDepth(depth) {
+  var splits = depthToSplits.get(depth);
+  var bitVector = new Array(250);
+  _.forEach(splits, function(split) {
+    _.forEach(split.left_side, function(d) {
+      bitVector[dataIndexToColIndex.get(d)] = 0;
+    });
+    _.forEach(split.right_side, function(d) {
+      bitVector[dataIndexToColIndex.get(d)] = 1;
+    });
+  });
+  return bitVector;
+
 }
 
 // Data by columns, array of {featureName:, featureValues:[], labels: []}
@@ -298,8 +338,9 @@ var dataByColumns = _.map(FEATURES, function(feature) {
   };
 });
 
-// assign all features to master first
-var allOnMaster =  _.chain(FEATURES.length)
+// assign all features to master
+function allOnMaster() {
+ return _.chain(FEATURES.length)
     .range()
     .map(function(i) {
       return {
@@ -308,14 +349,11 @@ var allOnMaster =  _.chain(FEATURES.length)
       };
     })
     .value();
-
-// all features on master node
-update(dataByColumns, allOnMaster);
+}
 
 // divide up the features amongst the workers
 function partitionToWorkers() {
-  // now randomly partition the features across the workers
-  var partitionedToWorkers = _.chain(FEATURES.length)
+  return _.chain(FEATURES.length)
     .range()
     .map(function(i) {
       return {
@@ -325,22 +363,52 @@ function partitionToWorkers() {
     })
     .shuffle()
     .value();
-
-  update(dataByColumns, partitionedToWorkers);
 }
 
-setTimeout(function () {
-  // partitionToWorkers();
-  // now sort each column by value, and update the labels
+function sortFeatureOnWorker(bitVector) {
   _.forEach(dataByColumns, function(feature) {
-    var valueAndLabel = _.zip(feature.featureValues, feature.labels);
-    valueAndLabel = _.unzip(_.sortBy(valueAndLabel, function(val) { return parseFloat(val[0]); }));
+    var valueAndLabel = _.chain(feature.featureValues)
+      .zip(feature.labels)
+      .sortBy(function(val) {
+        return parseFloat(val[0]);
+      })
+      .sortBy(function(val, index) {
+        return bitVector[index];
+      })
+      .unzip()
+      .value();
+
     feature.featureValues = valueAndLabel[0];
     feature.labels = valueAndLabel[1];
   });
-  console.log('sorted!');
-  update(dataByColumns, allOnMaster);
+}
+
+// assign all features to master first
+var workerAssignments = allOnMaster();
+update(dataByColumns, workerAssignments);
+
+// now partition features across workers
+setTimeout(function() {
+  workerAssignments = partitionToWorkers();
+  update(dataByColumns, workerAssignments);
 }, 2000);
 
-// setTimeout(partitionToWorkers, 4000);
+// now sort each column by value, and update the labels
+setTimeout(function() {
+  sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
+  update(dataByColumns, workerAssignments);
+}, 4000);
+
+// now train
+var depth = 0;
+function train() {
+  var bv = getBitVectorForDepth(depth);
+  sortFeatureOnWorker(bv);
+  update(dataByColumns, workerAssignments);
+  depth++;
+  if (depth < 6) {
+    setTimeout(train, 2000);
+  }
+}
+setTimeout(train, 6000);
 
