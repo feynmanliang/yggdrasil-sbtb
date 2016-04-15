@@ -1,8 +1,8 @@
 var Dispatcher = _.clone(Backbone.Events);
 
 $window = $(window);
-$window.on("resize", _.debounce(function() {
-  Dispatcher.trigger("resize");
+$window.on('resize', _.debounce(function() {
+  Dispatcher.trigger('resize');
 }, 700));
 
 var R2D3Views = [];
@@ -12,10 +12,10 @@ var scrollTop = 0, actualScrollTop = 0;
 function checkScroll() {
   actualScrollTop = $window.scrollTop();
 
-  if(actualScrollTop != scrollTop) {
+  if (actualScrollTop != scrollTop) {
     newScrollTop = ZENO(scrollTop, actualScrollTop);
 
-    Dispatcher.trigger("scroll", newScrollTop);
+    Dispatcher.trigger('scroll', newScrollTop);
     scrollTop = newScrollTop;
   }
 }
@@ -25,14 +25,14 @@ function draw() {
 
   // Drawing code goes here
   _.each(R2D3Views, function(v, i) {
-    if(!v.rr) { return; }
+    if (!v.rr) { return; }
     v.rr = false;
     v.render(); // Let the view have the last word about re-rendering next frame.
   });
 
-  if(actualScrollTop != scrollTop) {
+  if (actualScrollTop != scrollTop) {
     newScrollTop = ZENO(scrollTop, actualScrollTop);
-    Dispatcher.trigger("scroll", newScrollTop);
+    Dispatcher.trigger('scroll', newScrollTop);
     scrollTop = newScrollTop;
   }
 }
@@ -41,57 +41,57 @@ var LANG = $('html').attr('lang');
 LANG = (typeof LANG !== 'undefined') ? LANG : 'en';
 
 var DIMENSIONS = [
-  { "id": "elevation" },
-  { "id": "year_built" },
-  { "id": "bath" },
-  { "id": "beds" },
-  { "id": "price" },
-  { "id": "sqft" },
-  { "id": "price_per_sqft" }
+  { 'id': 'elevation' },
+  { 'id': 'year_built' },
+  { 'id': 'bath' },
+  { 'id': 'beds' },
+  { 'id': 'price' },
+  { 'id': 'sqft' },
+  { 'id': 'price_per_sqft' }
 ]
 
 var DIMENSION_LONGFORM = {
   elevation: {
-    "en": "elevation",
-    "ru": "возвышение",
-    "zh": "海拔",
-    "fr": "altitude"
+    'en': 'elevation',
+    'ru': 'возвышение',
+    'zh': '海拔',
+    'fr': 'altitude'
   },
   year_built: {
-    "en": "year built",
-    "ru": "год постройки",
-    "zh": "建成年份",
-    "fr": "construction"
+    'en': 'year built',
+    'ru': 'год постройки',
+    'zh': '建成年份',
+    'fr': 'construction'
   },
   bath: {
-    "en": "bathrooms",
-    "ru": "кол-во ванных",
-    "zh": "浴室",
-    "fr": "bains"
+    'en': 'bathrooms',
+    'ru': 'кол-во ванных',
+    'zh': '浴室',
+    'fr': 'bains'
   },
   beds: {
-    "en": "bedrooms",
-    "ru": "кол-во спален",
-    "zh": "臥室",
-    "fr": "pièces"
+    'en': 'bedrooms',
+    'ru': 'кол-во спален',
+    'zh': '臥室',
+    'fr': 'pièces'
   },
   price: {
-    "en": "price",
-    "ru": "стоимость",
-    "zh": "價格",
-    "fr": "prix"
+    'en': 'price',
+    'ru': 'стоимость',
+    'zh': '價格',
+    'fr': 'prix'
   },
   sqft: {
-    "en": "square feet",
-    "ru": "площадь",
-    "zh": "海拔",
-    "fr": "mètres"
+    'en': 'square feet',
+    'ru': 'площадь',
+    'zh': '海拔',
+    'fr': 'mètres'
   },
   price_per_sqft: {
-    "en": "price per sqft",
-    "ru": "цена за m²",
-    "zh": "每平方公尺價格",
-    "fr": "prix par mètre"
+    'en': 'price per sqft',
+    'ru': 'цена за m²',
+    'zh': '每平方公尺價格',
+    'fr': 'prix par mètre'
   }
 }
 
@@ -113,25 +113,25 @@ var FILL_FN = function(d, o) {
     o = 1;
   }
 
-  if((typeof d == "object" && d['target'] > 0.5) || d === "isTarget" || (typeof d == "boolean" && d)) {
-    // return "rgba(130,140,53," + o + ")"; // SF
-    // return "rgba(242,85,44," + o + ")"; // Giants Orange
-    // return "rgba(253,185,39," + o + ")"; // Warriors Gold
-    // return "rgba(211,144,36," + o + ")"; // Warriors Gold, slightly darkened
-    // return "rgba(215,126,39," + o + ")"; // Another Orange
-    // return "rgba(215,126,39," + o + ")"; // Another Orange
-    return "rgba(65,153,43," + o + ")"; // Another Green
+  if ((typeof d == 'object' && d['target'] > 0.5) || d === 'isTarget' || (typeof d == 'boolean' && d)) {
+    // return 'rgba(130,140,53,' + o + ')'; // SF
+    // return 'rgba(242,85,44,' + o + ')'; // Giants Orange
+    // return 'rgba(253,185,39,' + o + ')'; // Warriors Gold
+    // return 'rgba(211,144,36,' + o + ')'; // Warriors Gold, slightly darkened
+    // return 'rgba(215,126,39,' + o + ')'; // Another Orange
+    // return 'rgba(215,126,39,' + o + ')'; // Another Orange
+    return 'rgba(65,153,43,' + o + ')'; // Another Green
   } else {
-    // return "rgba(69,110,191," + o + ")"; // NYC
-    // return "rgba(38,82,126," + o + ")"; // Yankee Blue
-    // return "rgba(0,107,182," + o + ")"; // Knicks Blue
-    return "rgba(16,70,131," + o + ")"; // Another Blue
+    // return 'rgba(69,110,191,' + o + ')'; // NYC
+    // return 'rgba(38,82,126,' + o + ')'; // Yankee Blue
+    // return 'rgba(0,107,182,' + o + ')'; // Knicks Blue
+    return 'rgba(16,70,131,' + o + ')'; // Another Blue
   }
 }
 
 var ZENO = function(current, actual) {
   var remainder = (current - actual) * 0.85;
-  if(Math.abs(remainder) < 0.05) {
+  if (Math.abs(remainder) < 0.05) {
     return actual;
   } else {
     return remainder + actual;
@@ -168,16 +168,16 @@ var BinContinuousDataByPredicate = function(args) {
   var maxPerBin = 0;
   var binnedData = _.map(_.range(args.bins), function(d) {
     var isTargetCount = 0;
-    if(isTargetsGrouped[d]) { isTargetCount = isTargetsGrouped[d].length; }
-    if(isTargetCount > maxPerBin) { maxPerBin = isTargetCount; }
+    if (isTargetsGrouped[d]) { isTargetCount = isTargetsGrouped[d].length; }
+    if (isTargetCount > maxPerBin) { maxPerBin = isTargetCount; }
 
     var isNotTargetCount = 0;
-    if(isNotTargetsGrouped[d]) { isNotTargetCount = isNotTargetsGrouped[d].length; }
-    if(isNotTargetCount > maxPerBin) { maxPerBin = isNotTargetCount; }
+    if (isNotTargetsGrouped[d]) { isNotTargetCount = isNotTargetsGrouped[d].length; }
+    if (isNotTargetCount > maxPerBin) { maxPerBin = isNotTargetCount; }
 
     return {
-      "isTarget" : isTargetCount,
-      "isNotTarget" : isNotTargetCount
+      'isTarget' : isTargetCount,
+      'isNotTarget' : isNotTargetCount
     }
   });
 
@@ -226,11 +226,11 @@ var ParseLineageFromTreeData = function(tree_data) {
 var CompileDataForNode = function(data_table, tree_stats, nodeID) {
   var dataIDs = [];
 
-  if(tree_stats[nodeID].data_rows) {
-    if(tree_stats[nodeID].data_rows.true) {
+  if (tree_stats[nodeID].data_rows) {
+    if (tree_stats[nodeID].data_rows.true) {
       dataIDs = dataIDs.concat(tree_stats[nodeID].data_rows.true);
     }
-    if(tree_stats[nodeID].data_rows.false) {
+    if (tree_stats[nodeID].data_rows.false) {
       dataIDs = dataIDs.concat(tree_stats[nodeID].data_rows.false);
     }
   }
@@ -250,19 +250,19 @@ var CompileMixForNode = function(data_table, tree_stats, nodeID) {
   var countTrue = 0;
   var countFalse = 0;
 
-  if(tree_stats[nodeID].data_rows) {
-    if(tree_stats[nodeID].data_rows.true) {
+  if (tree_stats[nodeID].data_rows) {
+    if (tree_stats[nodeID].data_rows.true) {
       countTrue = tree_stats[nodeID].data_rows.true.length;
     }
 
-    if(tree_stats[nodeID].data_rows.false) {
+    if (tree_stats[nodeID].data_rows.false) {
       countFalse = tree_stats[nodeID].data_rows.false.length;
     }
 
     var total = countTrue + countFalse;
-    var classification = "isTarget";
+    var classification = 'isTarget';
     if (countFalse > countTrue) {
-      classification = "isNotTarget";
+      classification = 'isNotTarget';
     }
 
     return {
@@ -350,8 +350,8 @@ var ComputeTestTree = function(tree, test_set) {
     var stats = {
       data : data,
       data_rows : {
-        true : _.pluck(target[0], "index"),
-        false : _.pluck(target[1], "index")
+        true : _.pluck(target[0], 'index'),
+        false : _.pluck(target[1], 'index')
       },
       has_children: hasChildren,
       node: tree.id
@@ -359,7 +359,7 @@ var ComputeTestTree = function(tree, test_set) {
 
     test_stats[parseInt(stats.node)] = stats;
 
-    if(hasChildren) {
+    if (hasChildren) {
       stats.attribute = tree.key,
       stats.max_val = max;
       stats.min_val = min;
@@ -405,13 +405,13 @@ var TreePieView = Backbone.View.extend({
       .sort(null)
       .value(function(d) { return d.count; });
 
-    this.slices = this.g.selectAll(".arc")
+    this.slices = this.g.selectAll('.arc')
       .data(this.pie(this.data.parts))
-    .enter().append("g")
-      .attr("class", "arc");
+    .enter().append('g')
+      .attr('class', 'arc');
 
     this.slices.each(function(d) {
-      d3.select(this).append("path");
+      d3.select(this).append('path');
     });
 
     this.rr = true;
@@ -422,7 +422,7 @@ var TreePieView = Backbone.View.extend({
     this.area = this.maxArea / this.total_data_count * parseInt(this.data.total);
     var newRadius = Math.sqrt(this.area/Math.PI);
 
-    if(this.radius != newRadius) {
+    if (this.radius != newRadius) {
       this.radius = newRadius;
       this.arc = d3.svg.arc()
         .outerRadius(this.radius)
@@ -433,7 +433,7 @@ var TreePieView = Backbone.View.extend({
     }
   },
   handleResize: function(args) {
-    if(this.maxRadius != args.maxRadius) {
+    if (this.maxRadius != args.maxRadius) {
       this.maxRadius = args.maxRadius;
       this.computeGeometry();
       this.rr = true;
@@ -443,9 +443,9 @@ var TreePieView = Backbone.View.extend({
     var v = this;
 
     this.slices.each(function(d) {
-      d3.select(this).select("path")
-        .attr("d", v.arc)
-        .style("fill", function(d) { return FILL_FN(d.data.key); });
+      d3.select(this).select('path')
+        .attr('d', v.arc)
+        .style('fill', function(d) { return FILL_FN(d.data.key); });
     });
   }
 });
@@ -456,7 +456,7 @@ var HousingAxisHistogram = Backbone.View.extend({
     this.key = args.key;
     this.g = args.g;
 
-    if (typeof args.split === "number" && !isNaN(args.split)) {
+    if (typeof args.split === 'number' && !isNaN(args.split)) {
       this.split = args.split;
     } else {
       this.split = null;
@@ -464,7 +464,7 @@ var HousingAxisHistogram = Backbone.View.extend({
 
     this.width = 100;
     this.height = 25;
-    this.orientation = "HORIZONTAL";
+    this.orientation = 'HORIZONTAL';
 
     this.barWidth = 2;
     this.barGap = 1;
@@ -475,7 +475,7 @@ var HousingAxisHistogram = Backbone.View.extend({
       height: this.height
     });
 
-    this.cid = this.cid + "HousingAxisHistogram"
+    this.cid = this.cid + 'HousingAxisHistogram'
 
     this.rr = true;
     R2D3Views.push(this);
@@ -483,7 +483,7 @@ var HousingAxisHistogram = Backbone.View.extend({
   handleResize: function(args) {
     _.extend(this, args);
 
-    if(this.orientation == "HORIZONTAL") {
+    if (this.orientation == 'HORIZONTAL') {
       this.valueEdge = this.width;
       this.magnitudeEdge = this.height
     } else {
@@ -491,8 +491,8 @@ var HousingAxisHistogram = Backbone.View.extend({
       this.magnitudeEdge = this.width
     }
 
-    if(args.barWidth) { this.barWidth = args.barWidth; }
-    if(args.barGap) { this.barGap = args.barGap; }
+    if (args.barWidth) { this.barWidth = args.barWidth; }
+    if (args.barGap) { this.barGap = args.barGap; }
 
     this.sectionWidth = this.barWidth * 2 + this.barGap;
     this.binsCount = Math.floor(this.valueEdge/this.sectionWidth);
@@ -503,7 +503,7 @@ var HousingAxisHistogram = Backbone.View.extend({
       bins: this.binsCount
     });
 
-    if(this.fixedMagnitude) {
+    if (this.fixedMagnitude) {
       this.max = this.fixedMagnitude;
     } else {
       this.max = this.binnedData.max;
@@ -513,7 +513,7 @@ var HousingAxisHistogram = Backbone.View.extend({
       .domain([0, this.max])
       .range([0, this.magnitudeEdge * this.growth]);
 
-    if(this.split) {
+    if (this.split) {
       // If there's a split value, show it.
 
       var v = this;
@@ -527,7 +527,7 @@ var HousingAxisHistogram = Backbone.View.extend({
     this.rr = true;
   },
   setBarGrowth: function(growth) {
-    if(this.growth != growth) {
+    if (this.growth != growth) {
       this.growth = growth;
 
       this.binScale = d3.scale.linear()
@@ -540,101 +540,101 @@ var HousingAxisHistogram = Backbone.View.extend({
   render: function() {
     var v = this;
 
-    this.selection = d3.select(this.g).selectAll(".bin")
+    this.selection = d3.select(this.g).selectAll('.bin')
       .data(this.binnedData.bins)
 
     this.selection.exit().remove()
 
     this.selection
       .enter()
-      .append("g")
-        .attr("class", "bin")
+      .append('g')
+        .attr('class', 'bin')
 
     this.selection
-      .attr("transform", function(d, i) {
-        if(v.orientation == "HORIZONTAL") {
-          return "translate("+(i*v.sectionWidth)+",0)";
+      .attr('transform', function(d, i) {
+        if (v.orientation == 'HORIZONTAL') {
+          return 'translate('+(i*v.sectionWidth)+',0)';
         } else {
-          return "translate(0,"+(i*v.sectionWidth)+")";
+          return 'translate(0,'+(i*v.sectionWidth)+')';
         }
       })
       .each(function(d) {
-        d3.select(this).selectAll("rect").remove()
+        d3.select(this).selectAll('rect').remove()
 
         d3.select(this)
-          .append("rect")
-            .attr("class", "isTarget")
-            .attr("width", function(d) {
-              if(v.orientation == "HORIZONTAL") {
+          .append('rect')
+            .attr('class', 'isTarget')
+            .attr('width', function(d) {
+              if (v.orientation == 'HORIZONTAL') {
                 return v.barWidth;
               } else {
                 return v.binScale(d.isTarget);
               }
             })
-            .attr("height", function(d) {
-              if(v.orientation != "HORIZONTAL") {
+            .attr('height', function(d) {
+              if (v.orientation != 'HORIZONTAL') {
                 return v.barWidth;
               } else {
                 return v.binScale(d.isTarget);
               }
             })
-            .attr("y", function(d) {
-              if(v.orientation == "HORIZONTAL") {
+            .attr('y', function(d) {
+              if (v.orientation == 'HORIZONTAL') {
                 return v.magnitudeEdge - v.binScale(d.isTarget);
               } else {
                 return 0
               }
             })
-            .attr("x", function(d) {
-              if(v.orientation != "HORIZONTAL") {
+            .attr('x', function(d) {
+              if (v.orientation != 'HORIZONTAL') {
                 return v.magnitudeEdge - v.binScale(d.isTarget);
               } else {
                 return 0
               }
             })
-            .attr("fill", FILL_FN("isTarget"))
+            .attr('fill', FILL_FN('isTarget'))
 
         d3.select(this)
-          .append("rect")
-            .attr("class", "isNotTarget")
-            .attr("width", function(d) {
-              if(v.orientation == "HORIZONTAL") {
+          .append('rect')
+            .attr('class', 'isNotTarget')
+            .attr('width', function(d) {
+              if (v.orientation == 'HORIZONTAL') {
                 return v.barWidth;
               } else {
                 return v.binScale(d.isNotTarget);
               }
             })
-            .attr("height", function(d) {
-              if(v.orientation != "HORIZONTAL") {
+            .attr('height', function(d) {
+              if (v.orientation != 'HORIZONTAL') {
                 return v.barWidth;
               } else {
                 return v.binScale(d.isNotTarget);
               }
             })
-            .attr("y", function(d) {
-              if(v.orientation == "HORIZONTAL") {
+            .attr('y', function(d) {
+              if (v.orientation == 'HORIZONTAL') {
                 return v.magnitudeEdge - v.binScale(d.isNotTarget);
               } else {
                 return v.barWidth
               }
             })
-            .attr("x", function(d) {
-              if(v.orientation != "HORIZONTAL") {
+            .attr('x', function(d) {
+              if (v.orientation != 'HORIZONTAL') {
                 return v.magnitudeEdge - v.binScale(d.isNotTarget);
               } else {
                 return v.barWidth
               }
             })
-            .attr("fill", FILL_FN("isNotTarget"))
+            .attr('fill', FILL_FN('isNotTarget'))
       });
 
     if (this.split_location) {
-      this.split_path = d3.select(this.g).select(".split_path");
+      this.split_path = d3.select(this.g).select('.split_path');
 
-      if(this.split_path.empty()) {
+      if (this.split_path.empty()) {
         this.split_path = d3.select(this.g).append('path')
-          .attr("fill", "#888888")
-          .classed("split_path", true);
+          .attr('fill', '#888888')
+          .classed('split_path', true);
       }
 
       var x = this.split_location;
@@ -646,7 +646,7 @@ var HousingAxisHistogram = Backbone.View.extend({
       path += 'L ' + (x - 4) + ' ' + (y + 4) + ' ';
       path += 'Z';
 
-      this.split_path.attr("d", path);
+      this.split_path.attr('d', path);
     }
 
     return this;
@@ -655,7 +655,7 @@ var HousingAxisHistogram = Backbone.View.extend({
 
 var TreeNodeView = Backbone.View.extend({
   initialize: function(args) {
-    this.cid = this.cid + "TreeNodeView";
+    this.cid = this.cid + 'TreeNodeView';
 
     var v = this;
 
@@ -668,8 +668,8 @@ var TreeNodeView = Backbone.View.extend({
     this.links = args.links;
 
     this.histogram = d3.select(this.g)
-      .append("g")
-      .attr("class", "tree-histogram");
+      .append('g')
+      .attr('class', 'tree-histogram');
 
     this.histogram
       .each(function() {
@@ -685,20 +685,20 @@ var TreeNodeView = Backbone.View.extend({
 
     // Pie Chart
     this.pieChartLayer = d3.select(this.g)
-      .append("g")
-      .attr("class", "tree-pie")
-      .attr("opacity", 0);
+      .append('g')
+      .attr('class', 'tree-pie')
+      .attr('opacity', 0);
 
-    var path = this.pieChartLayer.append("path")
-      .attr("fill", "none")
+    var path = this.pieChartLayer.append('path')
+      .attr('fill', 'none')
 
     if (!args.links) {
       path
-      .attr("stroke-dasharray", "6,5")
-      .attr("stroke", "#666666");
+      .attr('stroke-dasharray', '6,5')
+      .attr('stroke', '#666666');
     } else {
       path
-      .attr("stroke", "#000000");
+      .attr('stroke', '#000000');
     }
 
     this.pieChart = new TreePieView({
@@ -706,8 +706,8 @@ var TreeNodeView = Backbone.View.extend({
       data: {
         total: this.stats.data.length,
         parts: [
-          { key: "isTarget", count: this.stats.data_rows['true'].length },
-          { key: "isNotTarget", count: this.stats.data_rows['false'].length }
+          { key: 'isTarget', count: this.stats.data_rows['true'].length },
+          { key: 'isNotTarget', count: this.stats.data_rows['false'].length }
         ]
       },
       key: v.stats.attribute,
@@ -718,13 +718,13 @@ var TreeNodeView = Backbone.View.extend({
     this.verticalOffset = 0;
 
     this.label = d3.select(this.g)
-      .append("text")
-      .attr("font-size", 12)
-      .attr("font-weight", 600)
-      .attr("fill", "#555555")
-      .attr("text-anchor", "middle");
+      .append('text')
+      .attr('font-size', 12)
+      .attr('font-weight', 600)
+      .attr('fill', '#555555')
+      .attr('text-anchor', 'middle');
 
-    this.listenTo(Dispatcher, "scroll", this.handleScroll);
+    this.listenTo(Dispatcher, 'scroll', this.handleScroll);
     this.rr = true;
     R2D3Views.push(this);
   },
@@ -766,7 +766,7 @@ var TreeNodeView = Backbone.View.extend({
     var pieFading = 0;
     var pieCenterOffset = windowHeight * 0.4 / this.maxDepth;
 
-    if(!this.links) {
+    if (!this.links) {
       pieFading = 1;
 
       var distanceToGo = (this.maxDepth - this.depth) * (windowHeight * 0.45) / this.maxDepth;
@@ -797,7 +797,7 @@ var TreeNodeView = Backbone.View.extend({
     var newHistogramOpacity = this.histogramOpacityThreshold(scroll);
     var newPieOpacity = this.pieOpacityThreshold(scroll);
     var newVerticalOffset = this.verticalOffsetThreshold(scroll);
-    if(this.histogramOpacity != newHistogramOpacity ||
+    if (this.histogramOpacity != newHistogramOpacity ||
         this.verticalOffset != newVerticalOffset ||
         this.pieOpacity != newPieOpacity) {
       this.histogramOpacity = newHistogramOpacity;
@@ -810,23 +810,23 @@ var TreeNodeView = Backbone.View.extend({
     var v = this;
 
     this.histogram
-      .attr("transform", "translate("+(-this.width/2)+",0)")
-      .attr("opacity", this.histogramOpacity);
+      .attr('transform', 'translate('+(-this.width/2)+',0)')
+      .attr('opacity', this.histogramOpacity);
 
     this.pieChartLayer
-      .attr("opacity", this.pieOpacity)
-      .attr("transform", "translate(0,"+this.verticalOffset+")");
+      .attr('opacity', this.pieOpacity)
+      .attr('transform', 'translate(0,'+this.verticalOffset+')');
 
-    this.pieChartLayer.select("path")
-      .attr("opacity", this.pieOpacity)
-      .attr("d", function() {
+    this.pieChartLayer.select('path')
+      .attr('opacity', this.pieOpacity)
+      .attr('d', function() {
         var x1 = 0;
         var y1 = 0;
         var x2 = 0;
         var y2 = -v.verticalOffset;
 
-        var d = "M " + x1 + " " + y1 + " ";
-        d += "L " + x2 + " " + y2 + " ";
+        var d = 'M ' + x1 + ' ' + y1 + ' ';
+        d += 'L ' + x2 + ' ' + y2 + ' ';
 
         return d;
       });
@@ -834,20 +834,20 @@ var TreeNodeView = Backbone.View.extend({
     if (this.stats.attribute) {
       this.label
         .text(DIMENSION_LONGFORM[this.stats.attribute][LANG])
-        .attr("opacity", this.histogramOpacity);
+        .attr('opacity', this.histogramOpacity);
     }
 
 
-    if(this.links) {
+    if (this.links) {
       d3.selectAll(this.links)
-        .attr("opacity", this.histogramOpacity);
+        .attr('opacity', this.histogramOpacity);
     }
   }
 });
 
 var DecisionTreeView = Backbone.View.extend({
   initialize: function(args) {
-    this.cid = this.cid + "DecisionTreeView";
+    this.cid = this.cid + 'DecisionTreeView';
 
     var v = this;
 
@@ -858,46 +858,46 @@ var DecisionTreeView = Backbone.View.extend({
 
     this.maxDepth = _.max(this.tree.nodes, function(d) {
       return d.depth;
-    })["depth"];
+    })['depth'];
 
     this.verticalPadding = 30;
 
     // DOM prep
-    this.$section = $("#tree");
+    this.$section = $(this.el).parent();
 
-    this.svg = d3.select(this.el).append("svg");
-    this.links_layer = this.svg.append("g")
-      .attr("class", "links_layer")
-      .attr("transform", "translate(0, "+this.verticalPadding+")");
+    this.svg = d3.select(this.el).append('svg');
+    this.links_layer = this.svg.append('g')
+      .attr('class', 'links_layer')
+      .attr('transform', 'translate(0, '+this.verticalPadding+')');
 
     var nodeLinks = {};
 
-    this.links = this.links_layer.selectAll(".tree-link")
+    this.links = this.links_layer.selectAll('.tree-link')
       .data(this.tree.links)
       .enter()
-        .append("path")
-        .attr("class", "tree-link")
-        .attr("stroke", "#000000")
-        .attr("fill", "none")
+        .append('path')
+        .attr('class', 'tree-link')
+        .attr('stroke', '#000000')
+        .attr('fill', 'none')
         .each(function(d) {
-          if(!nodeLinks[d.source.id]) {
+          if (!nodeLinks[d.source.id]) {
             nodeLinks[d.source.id] = [this];
           } else {
             nodeLinks[d.source.id].push(this);
           }
         });
 
-    this.nodes_layer = this.svg.append("g")
-      .attr("class", "nodes_layer")
-      .attr("transform", "translate(0, "+this.verticalPadding+")");
+    this.nodes_layer = this.svg.append('g')
+      .attr('class', 'nodes_layer')
+      .attr('transform', 'translate(0, '+this.verticalPadding+')');
 
-    this.nodes = this.nodes_layer.selectAll(".node")
+    this.nodes = this.nodes_layer.selectAll('.node')
       .data(this.tree.nodes)
       .enter()
-        .append("g")
-        .attr("class", "node")
+        .append('g')
+        .attr('class', 'node')
         .each(function(d) {
-          if(!v.stats[d.id]) { return; }
+          if (!v.stats[d.id]) { return; }
           this.view = new TreeNodeView({
             g: this,
             node: d,
@@ -947,7 +947,7 @@ var DecisionTreeView = Backbone.View.extend({
     var end = sectionOffsetTop + sectionHeight;
 
     this.nodes.each(function(d) {
-      if(!this.view) { return; }
+      if (!this.view) { return; }
       this.view.handleResize({
         width: (4 + Math.floor(d.samples/2)),
         height: v.graphHeight,
@@ -962,22 +962,22 @@ var DecisionTreeView = Backbone.View.extend({
     var v = this;
 
     this.svg
-      .attr("width", this.width)
-      .attr("height", this.height)
-      .style("padding", "25px 0");
+      .attr('width', this.width)
+      .attr('height', this.height)
+      .style('padding', '25px 0');
 
     this.nodes.each(function(d) {
-      d3.select(this).attr("transform", function() {
+      d3.select(this).attr('transform', function() {
 
         var x = v.x_scale(d.x);
         var y = v.y_scale(d.y);
 
-        return "translate("+x+","+y+")";
+        return 'translate('+x+','+y+')';
       });
     });
 
     this.links.each(function(link) {
-      d3.select(this).attr("d", function() {
+      d3.select(this).attr('d', function() {
         var x1 = v.x_scale(link.source.x);
         var y1 = v.y_scale(link.source.y);
         var x2 = v.x_scale(link.target.x);
@@ -985,9 +985,9 @@ var DecisionTreeView = Backbone.View.extend({
 
         var lineTop = v.graphHeight + y1 + 3;
 
-        var d = "M " + x1 + " " + lineTop + " ";
-        d += "L " + x2 + " " + lineTop + " ";
-        d += "L " + x2 + " " + y2 + " ";
+        var d = 'M ' + x1 + ' ' + lineTop + ' ';
+        d += 'L ' + x2 + ' ' + lineTop + ' ';
+        d += 'L ' + x2 + ' ' + y2 + ' ';
 
         return d;
       });
@@ -1002,13 +1002,13 @@ var DecisionTreeView = Backbone.View.extend({
 })
 
 var DecisionTree = new DecisionTreeView({
-  el: $("#decision-tree"),
+  el: $('#decision-tree-tutorial'),
   data: {
     tree: tree_data,
     stats: tree_stats
   }
 });
 
-Dispatcher.trigger("resize");
+Dispatcher.trigger('resize');
 draw();
 
