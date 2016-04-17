@@ -387,6 +387,11 @@
 
           // Decision Tree Tutorial
           (function() {
+            const SCROLL_EVENT = (/Firefox/i.test(navigator.userAgent))? 'DOMMouseScroll' : 'mousewheel';
+            const PREV_PAGE = 45;
+            const NEXT_PAGE = 100;
+            const SCROLL_DELTA = 5;
+
             var decisionTree = new DecisionTreeView({
               el: $('#decision-tree-tutorial'),
               data: {
@@ -394,18 +399,15 @@
                 stats: tree_stats
               }
             });
-
-            const PREV_PAGE = 45;
-            const NEXT_PAGE = 100;
-            const SCROLL_DELTA = 5;
             var scroll = PREV_PAGE;
+
             var removeBindings = function() {
-              document.removeEventListener('DOMMouseScroll', decisionTreeTutorialScrollBindings, false); // FF
-              document.removeEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
+              document.removeEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
               Reveal.configure({
                 keyboard : {}
               });
             };
+
             var decisionTreeTutorialKeyBindings = function() {
               decisionTree.handleScroll(scroll);
               var prev = function() {
@@ -453,8 +455,9 @@
                 }
               });
             };
+
             var decisionTreeTutorialScrollBindings = function(e) {
-              scroll += e.deltaY / 10; // slow down scrolling by factor of 10
+              scroll += (e.deltaY) ? e.deltaY / 10 : e.detail; // slow down scrolling by factor of 10 for Chrome/Safari
               scroll = Math.max(PREV_PAGE, Math.min(scroll, NEXT_PAGE)); // clip between PREV_PAGE-NEXT_PAGE
 
               if (scroll <= PREV_PAGE) {
@@ -475,8 +478,7 @@
             Reveal.addEventListener( 'slidechanged', function(event) {
               if (event.indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
-                document.addEventListener('DOMMouseScroll', decisionTreeTutorialScrollBindings, false); // FF
-                document.addEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
+                document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
               } else {
                 removeBindings();
               }
@@ -485,8 +487,7 @@
             // if we start on the 2nd slide, set up key bindings and scroll events
             if (Reveal.getState().indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
-                document.addEventListener('DOMMouseScroll', decisionTreeTutorialScrollBindings, false); // FF
-                document.addEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
+                document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
             }
 
             // render decision tree tutorial
