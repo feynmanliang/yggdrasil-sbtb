@@ -105,7 +105,7 @@ _.each(DIMENSIONS, function(D) {
   })[D.id];
 });
 
-tree_training_set = _.shuffle(tree_training_set);
+var shuffled_training_set  = _.shuffle(tree_training_set);
 
 var FILL_FN = function(d, o) {
   // https://color.adobe.com/tree-color-theme-5926460/
@@ -203,26 +203,6 @@ var ParseGeometryFromTreeData = function(tree_data) {
   }
 }
 
-var ParseLineageFromTreeData = function(tree_data) {
-  var tree = d3.layout.tree();
-  var nodes = tree.nodes(tree_data);
-  var results = [];
-  _.each(nodes, function(n) {
-    var node = {
-      id: parseInt(n.id),
-    }
-
-    if (n.children) {
-      node.left = parseInt(n.children[0].id);
-      node.right = parseInt(n.children[1].id);
-    }
-
-    results[parseInt(n.id)] = node;
-  });
-
-  return results;
-}
-
 var CompileDataForNode = function(data_table, tree_stats, nodeID) {
   var dataIDs = [];
 
@@ -279,113 +259,10 @@ var CompileMixForNode = function(data_table, tree_stats, nodeID) {
   }
 }
 
-var ComputeSplit = function(data, key, splitValue) {
-  var split = _.partition(data, function(d) {
-    return d[key] >= splitValue
-  });
-
-  var gt = _.partition(split[0], isTargetFn);
-  var lte = _.partition(split[1], isTargetFn)
-
-  return {
-    key: key,
-    splitValue: splitValue,
-    gt: {
-      all: split[0],
-      isTarget: gt[0],
-      isNotTarget: gt[1]
-    },
-    lte: {
-      all: split[1],
-      isTarget: lte[0],
-      isNotTarget: lte[1]
-    }
-  }
-}
-
 _.each(tree_stats, function(node) {
-  node.data = CompileDataForNode(tree_training_set, tree_stats, node.node);
-  node.mix = CompileMixForNode(tree_training_set, tree_stats, node.node);
+  node.data = CompileDataForNode(shuffled_training_set, tree_stats, node.node);
+  node.mix = CompileMixForNode(shuffled_training_set, tree_stats, node.node);
 });
-
-_.each(test_stats, function(node) {
-  node.data = CompileDataForNode(tree_test_set, test_stats, node.node);
-  node.mix = CompileMixForNode(tree_test_set, test_stats, node.node);
-});
-
-
-var ComputeTestTree = function(tree, test_set) {
-  var test_tree = jQuery.extend(true, {}, tree);
-  var test_stats = [];
-
-  var partitionFork = function(tree, data, depth) {
-    tree.samples = data.length;
-
-    // Partition based on if data is Target
-    var target = _.partition(data, function(d) {
-      return d.target > 0.5;
-    });
-
-    // Partition based on if data is above or below split
-    var split = _.partition(data, function(d) {
-      return d[tree.key] > parseFloat(tree.value);
-    });
-
-    // Compute Gini for Given Node
-    var isTargetLength = target[0].length/data.length;
-    var isNotTargetLength = target[1].length/data.length;
-    var gini = 1 - (isTargetLength*isTargetLength + isNotTargetLength*isNotTargetLength);
-
-    tree.gini = gini;
-
-    // Some additional Statistics about the data
-    var hasChildren = (split[0].length > 0 && split[1].length >0);
-    var max = _.max(data, function(d) {
-      return d[tree.key];
-    })[tree.key];
-    var min = _.min(data, function(d) {
-      return d[tree.key];
-    })[tree.key];
-
-    var stats = {
-      data : data,
-      data_rows : {
-        true : _.pluck(target[0], 'index'),
-        false : _.pluck(target[1], 'index')
-      },
-      has_children: hasChildren,
-      node: tree.id
-    }
-
-    test_stats[parseInt(stats.node)] = stats;
-
-    if (hasChildren) {
-      stats.attribute = tree.key,
-      stats.max_val = max;
-      stats.min_val = min;
-      stats.data_values = {
-        true : _.pluck(target[0], tree.key),
-        false : _.pluck(target[1], tree.key)
-      }
-      stats.split_location = {
-        left_side: split[1],
-        right_side: split[0]
-      }
-      stats.split_point = tree.value
-
-      partitionFork(tree.children[0], split[1], depth+1);
-      partitionFork(tree.children[1], split[0], depth+1);
-    }
-
-  }
-
-  partitionFork(test_tree, test_set, 0);
-
-  return {
-    tree: test_tree,
-    stats: test_stats
-  }
-}
 
 var TreePieView = Backbone.View.extend({
   initialize: function(args) {
@@ -711,7 +588,7 @@ var TreeNodeView = Backbone.View.extend({
         ]
       },
       key: v.stats.attribute,
-      total_data_count: tree_training_set.length
+      total_data_count: shuffled_training_set.length
     });
 
     this.verticalOffsetThreshold = function(scroll) { return 0; }
@@ -999,16 +876,5 @@ var DecisionTreeView = Backbone.View.extend({
       this.view.handleScroll(scroll);
     })
   },
-})
-
-var DecisionTree = new DecisionTreeView({
-  el: $('#decision-tree-tutorial'),
-  data: {
-    tree: tree_data,
-    stats: tree_stats
-  }
 });
-
-Dispatcher.trigger('resize');
-draw();
 

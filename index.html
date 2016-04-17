@@ -61,10 +61,12 @@
       <div class="slides">
         <section>
           <h1>
-            Yggdrasil:<sub><a
-                href="https://www.youtube.com/watch?v=undaZKGe578">1</a>, <a
-                href="https://en.wikipedia.org/wiki/Yggdrasil">2</a></sub> Faster
-            Decision Trees using Column Partitioning in Spark
+            Yggdrasil:
+            <sub>
+              <a href="https://www.youtube.com/watch?v=undaZKGe578">1</a>,
+              <a href="https://en.wikipedia.org/wiki/Yggdrasil">2</a>
+            </sub>
+            Faster Decision Trees using Column Partitioning in Spark
           </h1>
           <table align='center' class='author'>
             <tr>
@@ -104,8 +106,8 @@
             based on the following features:
             <ul>
               <li>price</li>
-              <li>sqft</li>
-              <li>price per sqft</li>
+              <li>sq ft</li>
+              <li>price per sq ft</li>
               <li>year built</li>
               <li>elevation</li>
               <li># bathrooms</li>
@@ -195,7 +197,7 @@
         <section data-state='notation' style="text-align: left;">
           <h2>The New Approach: Yggdrasil</h2>
           <div>
-            <div style='float: left; width: 49%;'>
+            <div style='float: left; width: 50%;'>
               <ul>
                 <li>Partition training set <span class='emph italic'>by column</span></li>
                 <li class='fragment'>
@@ -208,7 +210,7 @@
                 <li class='fragment'><span class='highlight'>Communication cost:</span> $O(2^Dk + Dnk)$</li>
               </ul>
             </div>
-            <div style='float: right; width: 49%'>
+            <div style='float: right; width: 50%'>
               <img data-src='images/yggdrasil-diagram.png' width="100%"></img>
             </div>
           </div>
@@ -348,9 +350,8 @@
         <script src="lib/js/jquery.min.js"></script>
         <script src="lib/js/backbone-min.js"></script>
         <script src="lib/js/d3.min.js"></script>
-        <script src="js/reveal.js"></script>
+        <script src="js/reveal.min.js"></script>
         <script src="js/tree-training-set-98.js"></script>
-        <script src="js/helpers.js"></script>
         <script src="js/decision-tree-tutorial.js"></script>
         <script>
           // Full list of configuration options available at:
@@ -384,8 +385,20 @@
           // every link opens a new tab
           $('a').attr('target', '_blank');
 
+          // Decision Tree Tutorial
           (function() {
-            var scroll = 45;
+            var decisionTree = new DecisionTreeView({
+              el: $('#decision-tree-tutorial'),
+              data: {
+                tree: tree_data,
+                stats: tree_stats
+              }
+            });
+
+            const PREV_PAGE = 45;
+            const NEXT_PAGE = 100;
+            const SCROLL_DELTA = 5;
+            var scroll = PREV_PAGE;
             var removeBindings = function() {
               document.removeEventListener('DOMMouseScroll', decisionTreeTutorialScrollBindings, false); // FF
               document.removeEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
@@ -394,24 +407,24 @@
               });
             };
             var decisionTreeTutorialKeyBindings = function() {
-              DecisionTree.handleScroll(scroll);
+              decisionTree.handleScroll(scroll);
               var prev = function() {
-                scroll -= 5;
-                if (scroll <= 40) {
+                scroll -= SCROLL_DELTA;
+                if (scroll <= PREV_PAGE) {
                   removeBindings();
                   Reveal.prev();
                   return;
                 }
-                DecisionTree.handleScroll(scroll);
+                decisionTree.handleScroll(scroll);
               }
               var next = function() {
-                scroll += 5;
-                if (scroll >= 100) {
+                scroll += SCROLL_DELTA;
+                if (scroll >= NEXT_PAGE) {
                   removeBindings();
                   Reveal.next();
                   return;
                 }
-                DecisionTree.handleScroll(scroll);
+                decisionTree.handleScroll(scroll);
               }
               Reveal.configure({
                 keyboard: {
@@ -442,16 +455,20 @@
             };
             var decisionTreeTutorialScrollBindings = function(e) {
               scroll += e.deltaY / 10; // slow down scrolling by factor of 10
-              if (scroll <= 40) {
+              scroll = Math.max(PREV_PAGE, Math.min(scroll, NEXT_PAGE)); // clip between PREV_PAGE-NEXT_PAGE
+
+              if (scroll <= PREV_PAGE) {
+                scroll = PREV_PAGE;
                 removeBindings();
                 Reveal.prev();
                 return;
-              } else if (scroll >= 100) {
+              } else if (scroll >= NEXT_PAGE) {
+                scroll = NEXT_PAGE - (SCROLL_DELTA - 1);
                 removeBindings();
                 Reveal.next();
                 return;
               }
-              DecisionTree.handleScroll(scroll);
+              decisionTree.handleScroll(scroll);
             };
 
             var decisionTreeIndex = $('section').index($('#decision-tree'));
@@ -472,6 +489,9 @@
                 document.addEventListener('mousewheel', decisionTreeTutorialScrollBindings, false);
             }
 
+            // render decision tree tutorial
+            Dispatcher.trigger('resize');
+            draw();
           })();
         </script>
 

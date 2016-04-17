@@ -28,7 +28,6 @@ var RevealMath = window.RevealMath || (function(){
 
                 MathJax.Hub.Register.StartupHook('End', function () {
                   // needs to be set in a callback -- otherwise MathJax may override static styles
-                  // $('.right-corner').css('font-size','40%');
                   $('.dataset-info').css('font-size','0.60em');
                   $('.caption').css('font-size','0.62em');
                 });
