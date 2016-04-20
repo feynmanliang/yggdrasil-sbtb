@@ -226,7 +226,7 @@
 
         <section id='yggdrasil' style="text-align: left;">
         <h2>Yggdrasil in Action</h2>
-        <div class='container' id='yggdrasil-demo'></div>
+        <div class='container' id='yggdrasil-algo'></div>
         </section>
 
 
@@ -362,7 +362,7 @@
         <script src="js/reveal.min.js"></script>
         <script src="js/tree-training-set-98.js"></script>
         <script src="js/decision-tree-tutorial.js"></script>
-        <script src="js/yggdrasil-demo.js"></script>
+        <script src="js/yggdrasil-algo.js"></script>
         <script>
           // Full list of configuration options available at:
           // https://github.com/hakimel/reveal.js#configuration
@@ -395,8 +395,9 @@
           // every link opens a new tab
           $('a').attr('target', '_blank');
 
-          // Decision Tree Tutorial
+          // Decision Tree Tutorial and Yggdrasil Algo
           (function() {
+            /** Code for Decision Tree Tutorial **/
             const SCROLL_EVENT = (/Firefox/i.test(navigator.userAgent))? 'DOMMouseScroll' : 'mousewheel';
             const PREV_PAGE = 45;
             const NEXT_PAGE = 100;
@@ -411,13 +412,6 @@
             });
             var scroll = PREV_PAGE;
 
-            var removeBindings = function() {
-              document.removeEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
-              Reveal.configure({
-                keyboard : {}
-              });
-            };
-
             var decisionTreeTutorialKeyBindings = function() {
               decisionTree.handleScroll(scroll);
               var prev = function() {
@@ -428,7 +422,7 @@
                   return;
                 }
                 decisionTree.handleScroll(scroll);
-              }
+              };
               var next = function() {
                 scroll += SCROLL_DELTA;
                 if (scroll >= NEXT_PAGE) {
@@ -437,7 +431,7 @@
                   return;
                 }
                 decisionTree.handleScroll(scroll);
-              }
+              };
               Reveal.configure({
                 keyboard: {
                   // p, page up
@@ -484,25 +478,78 @@
               decisionTree.handleScroll(scroll);
             };
 
+            // render (initially) decision tree tutorial, regardless of what slide we're on
+            Dispatcher.trigger('resize');
+            draw();
+
+            /** Code for Yggdrasil Algo **/
+            var yggdrasilAlgoKeyBindings = function() {
+              var prev = function() {
+              };
+              var next = function() {
+              };
+              Reveal.configure({
+                keyboard: {
+                  // p, page up
+                  80: prev,
+                  33: prev,
+                  // h, left
+                  72: prev,
+                  37: prev,
+                  // k, up
+                  75: prev,
+                  38: prev,
+                  // n, page down
+                  78: next,
+                  34: next,
+                  // l, right
+                  76: next,
+                  39: next,
+                  // j, down
+                  74: next,
+                  40: next,
+                  // ENTER
+                  13: next,
+                  // SPACE
+                  32: next
+                }
+              });
+            };
+
+            /** Code for both **/
+
+            // remove all custom keyboard/scroll events,
+            // for both the decisionTreeTutorial and the
+            // yggdrasilAlgo slides
+            var removeBindings = function() {
+              document.removeEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
+              Reveal.configure({
+                keyboard : {}
+              });
+            };
+
             var decisionTreeIndex = $('section').index($('#decision-tree'));
+            var yggdrasilAlgoIndex = $('section').index($('#yggdrasil'));
+
             Reveal.addEventListener( 'slidechanged', function(event) {
               if (event.indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
                 document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
+              } else if (event.indexh === yggdrasilAlgoIndex) {
+                yggdrasilAlgoKeyBindings();
               } else {
                 removeBindings();
               }
             });
 
-            // if we start on the 2nd slide, set up key bindings and scroll events
-            if (Reveal.getState().indexh === decisionTreeIndex) {
+            // if we start on the decisionTree/yggdrasilAlgo slide, set up key bindings and scroll events
+           if (Reveal.getState().indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
                 document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
+            } else if (Reveal.getState().indexh === yggdrasilAlgoIndex) {
+                yggdrasilAlgoKeyBindings();
             }
 
-            // render decision tree tutorial
-            Dispatcher.trigger('resize');
-            draw();
           })();
         </script>
 

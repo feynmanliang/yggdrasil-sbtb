@@ -30,8 +30,8 @@ var _isTargetFn = function(labels) {
 var BarChart = Backbone.View.extend({
   initialize: function(args) {
     this.key = args.key;
-    this.data = args.data;
-    this.labels = args.labels;
+    // this.data = args.data;
+    // this.labels = args.labels;
     this.parentG = args.g;
 
     // if (typeof args.split === 'number' && !isNaN(args.split)) {
@@ -53,10 +53,9 @@ var BarChart = Backbone.View.extend({
 
     this.cid = this.cid + 'BarChart'
 
-    this.rr = true;
-    // TODO: this should render when we navigate to the page
-    R2D3Views.push(this);
+    // this.rr = true;
   },
+
   handleResize: function(args) {
     _.extend(this, args);
 
@@ -66,6 +65,13 @@ var BarChart = Backbone.View.extend({
     if (args.barGap) { this.barGap = args.barGap; }
 
     this.sectionWidth = this.barWidth + this.barGap;
+    // this.rr = true;
+  },
+
+  render: function(args) {
+    _.extend(this, args);
+    var v = this;
+
     this.isTargetPred = _isTargetFn(this.labels);
 
     var extent = d3.extent(this.data);
@@ -79,12 +85,6 @@ var BarChart = Backbone.View.extend({
     //   this.split_location = this.valueEdge / (extent[1] - extent[0]) * (this.split - extent[0]);
     // }
 
-    this.rr = true;
-  },
-
-  render: function(args) {
-    _.extend(this, args);
-    var v = this;
 
     // var bbox = this.g.getBBox();
         //.attr('transform', 'translate(' + (bbox.width / 2 + BAR_CHART_OFFSET) + ',' + -1*bbox.height + ')');
@@ -107,11 +107,8 @@ var BarChart = Backbone.View.extend({
 
     this.selection
       .attr('transform', function(d, i) {
-        if (v.orientation == 'HORIZONTAL') {
-          return 'translate(' + (i*v.sectionWidth) + ',0)';
-        } else {
-          return 'translate(0,' + (i*v.sectionWidth) + ')';
-        }
+        console.log(v.key + " transform: " + d + ", " + i + ", " + args.depth);
+        return 'translate(' + (i*v.sectionWidth) + ',0)';
       })
       .each(function(d, i) {
         d3.select(this).selectAll('rect').remove()
@@ -137,6 +134,7 @@ var BarChart = Backbone.View.extend({
             return (v.isTargetPred(d, i)) ? FILL_FN('isTarget') : FILL_FN('isNotTarget');
           });
       });
+
 
     // if (this.split_location) {
     //   this.split_path = d3.select(this.g).select('.split_path');
@@ -164,7 +162,7 @@ var BarChart = Backbone.View.extend({
 });
 
 
-var svg = d3.select('#yggdrasil-demo').append('svg')
+var svg = d3.select('#yggdrasil-algo').append('svg')
   .attr('width', width)
   .attr('height', height);
 
@@ -236,7 +234,7 @@ function createMasterAndWorkers(labels) {
 
 createMasterAndWorkers(nodeLabels);
 
-function update(featureData, partitions) {
+function update(featureData, partitions, depth) {
   var positionFeature = function(d, i) {
     var locInfo = partitions[i];
     var nodeCoords = getNodeCoordinates(locInfo.node);
@@ -252,7 +250,8 @@ function update(featureData, partitions) {
   features.each(function(d) {
     this.barChart.render({
       data: d.featureValues,
-      labels: d.labels
+      labels: d.labels,
+      depth: depth
     });
   });
 
@@ -260,10 +259,13 @@ function update(featureData, partitions) {
     .attr('class', 'feature')
     .each(function(d) {
       this.barChart = new BarChart({
-        g: this,
         key: d.featureName,
+        g: this
+      });
+      this.barChart.render({
         data: d.featureValues,
         labels: d.labels,
+        depth: depth
         // split: parseFloat(v.stats.split_point)
       });
     })
@@ -284,6 +286,7 @@ var dataIndexToColIndex = d3.map(_.range(250), function(d) {
 });
 
 var ParseSplitsFromTreeData = function(tree_data, tree_stats) {
+  tree_data['depth'] = 0;
   var queue = [tree_data];
   var depthToSplits = d3.map();
   while (queue.length > 0) {
@@ -298,6 +301,7 @@ var ParseSplitsFromTreeData = function(tree_data, tree_stats) {
       depthToSplits.get(depth).push(split_location);
 
       for (var i = 0; i < node.children.length; ++i) {
+        node.children[i]['depth'] = depth + 1;
         queue.push(node.children[i]);
       }
     }
@@ -385,18 +389,18 @@ function sortFeatureOnWorker(bitVector) {
 
 // assign all features to master first
 var workerAssignments = allOnMaster();
-update(dataByColumns, workerAssignments);
+update(dataByColumns, workerAssignments, -3);
 
 // now partition features across workers
 setTimeout(function() {
   workerAssignments = partitionToWorkers();
-  update(dataByColumns, workerAssignments);
+  update(dataByColumns, workerAssignments, -2);
 }, 2000);
 
 // now sort each column by value, and update the labels
 setTimeout(function() {
   sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
-  update(dataByColumns, workerAssignments);
+  update(dataByColumns, workerAssignments, -1);
 }, 4000);
 
 // now train
@@ -404,9 +408,9 @@ var depth = 0;
 function train() {
   var bv = getBitVectorForDepth(depth);
   sortFeatureOnWorker(bv);
-  update(dataByColumns, workerAssignments);
+  update(dataByColumns, workerAssignments, depth);
   depth++;
-  if (depth < 6) {
+  if (depth < 1) {
     setTimeout(train, 2000);
   }
 }
