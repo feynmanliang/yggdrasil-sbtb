@@ -331,11 +331,14 @@
           <div>
             <div class='left'>
               <ul>
-                <li>Futher code improvements, publish as Spark package</li>
+                <li class='vertical-padding'>Better support for sparse features</il>
+                <li class='vertical-padding'>Lazy materialization: can we sort <span class='italic'>and</span> find split at the same time?</li>
+                <li class='vertical-padding'>Column compression: can we train on compressed data?</li>
+                <li class='vertical-padding'>Futher code improvements, publish as Spark package</li>
                 <ul>
                   <li>Potentially integrate with Spark MLlib v1.7</li>
                 </ul>
-                <li>Extend functionality further to support incremental updates, e.g. adding/removing features</li>
+                <li class='vertical-padding'>Extend functionality further to support incremental updates, e.g. adding/removing features from dataset</li>
               </ul>
             </div>
           </div>
@@ -372,11 +375,11 @@
 
             // Optional reveal.js plugins
             dependencies: [
-            { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
             // { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
             // { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
             // { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-            { src: 'plugin/zoom-js/zoom.js', async: true },
+            // { src: 'plugin/zoom-js/zoom.js', async: true },
+            { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
             { src: 'plugin/math/math.js', async: true },
             { src: 'plugin/notes/notes.js', async: true }
             ]

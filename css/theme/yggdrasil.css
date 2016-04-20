@@ -220,6 +220,9 @@ body {
 .reveal .italic {
   font-style: italic; }
 
+.reveal .vertical-padding {
+  padding: 5px 0; }
+
 /* Green */
 .correct {
   color: #3cc83c; }
