@@ -572,7 +572,7 @@ var TreeNodeView = Backbone.View.extend({
     if (!args.links) {
       path
       .attr('stroke-dasharray', '6,5')
-      .attr('stroke', '#666666');
+      .attr('stroke', '#888888');
     } else {
       path
       .attr('stroke', '#000000');
@@ -694,19 +694,25 @@ var TreeNodeView = Backbone.View.extend({
       .attr('opacity', this.pieOpacity)
       .attr('transform', 'translate(0,'+this.verticalOffset+')');
 
-    this.pieChartLayer.select('path')
-      .attr('opacity', this.pieOpacity)
-      .attr('d', function() {
-        var x1 = 0;
-        var y1 = 0;
-        var x2 = 0;
-        var y2 = -v.verticalOffset;
 
-        var d = 'M ' + x1 + ' ' + y1 + ' ';
-        d += 'L ' + x2 + ' ' + y2 + ' ';
+    var path = this.pieChartLayer.select('path');
+    if (this.depth == 0) {
+      // never show branch for very first pie chart
+      path.attr('opacity', 0);
+    } else {
+      path.attr('opacity', this.pieOpacity);
+    }
+    path.attr('d', function() {
+      var x1 = 0;
+      var y1 = 0;
+      var x2 = 0;
+      var y2 = -v.verticalOffset;
 
-        return d;
-      });
+      var d = 'M ' + x1 + ' ' + y1 + ' ';
+      d += 'L ' + x2 + ' ' + y2 + ' ';
+
+      return d;
+    });
 
     if (this.stats.attribute) {
       this.label
@@ -798,8 +804,8 @@ var DecisionTreeView = Backbone.View.extend({
     var windowHeight = $window.height();
     var windowWidth = $window.width();
 
-    this.height = Math.min(windowHeight * 0.7, 650);
-    this.width = Math.min(windowWidth * 0.6 * 0.90, 650 * 1.4);
+    this.height = Math.min(windowHeight * 0.7 * 0.95, 700 * 0.95);
+    this.width = Math.min(windowWidth * 0.9, 960 * 0.90);
 
     this.innerHeight = this.height - windowHeight * 0.15;
 
