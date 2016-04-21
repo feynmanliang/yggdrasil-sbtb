@@ -1,14 +1,16 @@
 // constants
-const width = Math.min($(window).width() * 0.7, 1024);
-const height = Math.min($(window).height() * 0.8, 576);
-const K = 4; // num. workers
-const NODE_RADIUS = 50;
-const PADDING_TOP = 40;
-const PADDING_BOTTOM = 140;
-const PADDING_WIDTH = 150;
-const FEATURE_OFFSET = 70;
-const BAR_CHART_OFFSET = 7;
+const width = Math.min($(window).width() * 0.7, 960 * 0.9);
+const height = Math.min($(window).height() * 0.8, 700 * 0.9);
 
+const NODE_RADIUS = 50;
+const PADDING_TOP = 120;
+const PADDING_BOTTOM = 120;
+const PADDING_WIDTH = 125;
+const FEATURE_OFFSET = 75;
+const BAR_CHART_OFFSET = 6;
+const TRIANGLE_LENGTH = 7;
+
+const K = 2; // num. workers
 const NUM_SAMPLES = tree_data['samples'];
 const FEATURES = [
         'bath',
@@ -20,27 +22,22 @@ const FEATURES = [
         'year_built',
       ];
 
-var _isTargetFn = function(labels) {
-  var fn = function(d, i) {
-    return labels[i] > 0.5;
-  };
-  return fn;
+function assert(condition, message) {
+    if (!condition) {
+        message = message || "Assertion failed";
+        if (typeof Error !== "undefined") {
+            throw new Error(message);
+        }
+        throw message; // Fallback
+    }
 }
 
 var BarChart = Backbone.View.extend({
   initialize: function(args) {
     this.key = args.key;
-    // this.data = args.data;
-    // this.labels = args.labels;
-    this.parentG = args.g;
+    this.parentElem = args.g;
 
-    // if (typeof args.split === 'number' && !isNaN(args.split)) {
-    //   this.split = args.split;
-    // } else {
-    //   this.split = null;
-    // }
-
-    this.height = FEATURE_OFFSET / 2;
+    this.height = FEATURE_OFFSET / 3;
     this.orientation = 'HORIZONTAL';
 
     this.barWidth = 1.0;
@@ -65,33 +62,43 @@ var BarChart = Backbone.View.extend({
     if (args.barGap) { this.barGap = args.barGap; }
 
     this.sectionWidth = this.barWidth + this.barGap;
+    this.totalWidth = this.sectionWidth * NUM_SAMPLES;
     // this.rr = true;
+  },
+
+  /**
+   * Helper function -- returns function that can be passed to Fill_FN
+   * for determining color of bar
+   **/
+  isTargetFn: function(labels) {
+    var fn = function(d, i) {
+      return labels[i] > 0.5;
+    };
+    return fn;
   },
 
   render: function(args) {
     _.extend(this, args);
     var v = this;
 
-    this.isTargetPred = _isTargetFn(this.labels);
+    this.isTargetPred = this.isTargetFn(this.labels);
 
     var extent = d3.extent(this.data);
     this.barScale = d3.scale.linear()
       .domain([extent[0], extent[1]])
-      .range([0, this.magnitudeEdge*this.growth]);
+      .range([0.5, this.magnitudeEdge*this.growth]);
 
-    // if (this.split) {
-    //   // If there's a split value, show it.
-    //   var v = this;
-    //   this.split_location = this.valueEdge / (extent[1] - extent[0]) * (this.split - extent[0]);
-    // }
-
-
-    // var bbox = this.g.getBBox();
-        //.attr('transform', 'translate(' + (bbox.width / 2 + BAR_CHART_OFFSET) + ',' + -1*bbox.height + ')');
+    if (args.splitIndex) {
+      // If there's a split value passed in, show it
+      var v = this;
+      this.splitLocation = this.totalWidth * (args.splitIndex / NUM_SAMPLES);
+    } else {
+      this.splitLocation = null;
+    }
 
     // append new group for barChart, position it underneath the label
     if (!this.g) {
-      this.g = d3.select(this.parentG).append('g')
+      this.g = d3.select(this.parentElem).append('g')
         .attr('class', 'barChart')
         .attr('transform', 'translate(' + (-3.1*NODE_RADIUS) + ',' + BAR_CHART_OFFSET + ')');
     }
@@ -107,7 +114,6 @@ var BarChart = Backbone.View.extend({
 
     this.selection
       .attr('transform', function(d, i) {
-        console.log(v.key + " transform: " + d + ", " + i + ", " + args.depth);
         return 'translate(' + (i*v.sectionWidth) + ',0)';
       })
       .each(function(d, i) {
@@ -135,284 +141,480 @@ var BarChart = Backbone.View.extend({
           });
       });
 
+    if (this.splitLocation) {
+      this.splitPath = this.g.select('.split-path');
 
-    // if (this.split_location) {
-    //   this.split_path = d3.select(this.g).select('.split_path');
+      if (this.splitPath.empty()) {
+        this.splitPath = this.g.append('path')
+          .classed('split-path', true)
+          .attr('fill', '#606060')
+          .style('fill-opacity', 0)
+          .transition()
+          .ease('linear')
+          .duration(500)
+          .style('fill-opacity', 1);
+      }
+      this.splitPath.transition()
+      .attr('fill', args.candidate ? args.best ? 'lawngreen' : 'crimson' : '#606060')
+      .duration(500);
 
-    //   if (this.split_path.empty()) {
-    //     this.split_path = d3.select(this.g).append('path')
-    //       .attr('fill', '#888888')
-    //       .classed('split_path', true);
-    //   }
+      var x = this.splitLocation;
+      var y = this.magnitudeEdge + 5;
 
-    //   var x = this.split_location;
-    //   var y = this.magnitudeEdge + 5;
+      // Draw triangle to show split
+      var path = '';
+      path += 'M ' + x + ' ' + y + ' ';
+      path += 'L ' + (x + TRIANGLE_LENGTH) + ' ' + (y + TRIANGLE_LENGTH) + ' ';
+      path += 'L ' + (x - TRIANGLE_LENGTH) + ' ' + (y + TRIANGLE_LENGTH) + ' ';
+      path += 'Z';
 
-    //   var path = '';
-    //   path += 'M ' + x + ' ' + y + ' ';
-    //   path += 'L ' + (x + 4) + ' ' + (y + 4) + ' ';
-    //   path += 'L ' + (x - 4) + ' ' + (y + 4) + ' ';
-    //   path += 'Z';
-
-    //   this.split_path.attr('d', path);
-    // }
+      this.splitPath.attr('d', path);
+    } else {
+      this.splitPath = this.g.select('.split-path');
+      if (!this.splitPath.empty()) {
+        this.splitPath.remove();
+      }
+    }
 
     return this;
   }
 });
 
+var YggdrasilAlgo = Backbone.View.extend({
 
-var svg = d3.select('#yggdrasil-algo').append('svg')
-  .attr('width', width)
-  .attr('height', height);
+  /**
+   * Constructor
+   **/
+  initialize: function(args) {
+    var v = this;
 
-var nodeLabels = ['master'];
-for (var i = 0; i < K; ++i) {
-  nodeLabels.push('worker');
-}
+    /**
+     * Helper function to create master and worker circles
+     **/
+    var createMasterAndWorkers = function(labels) {
+      var nodes = v.svg.selectAll('g.node').data(nodeLabels);
 
-function getNodeCoordinates(index) {
-  switch (index) {
-    case 0:
-      return {
-        x: (width / 2),
-        y: (1.1*NODE_RADIUS)
-      };
-    case 1:
-      return {
-        x: (NODE_RADIUS + PADDING_WIDTH),
-        y: (NODE_RADIUS + PADDING_TOP)
-      };
-    case 2:
-      return {
-        x: (NODE_RADIUS + PADDING_WIDTH),
-        y: (height - PADDING_BOTTOM - NODE_RADIUS)
-      };
-    case 3:
-      return {
-        x: (width - PADDING_WIDTH - NODE_RADIUS),
-        y: (NODE_RADIUS + PADDING_TOP)
-      };
-    case 4:
-      return {
-        x: (width - PADDING_WIDTH - NODE_RADIUS),
-        y: (height - PADDING_BOTTOM - NODE_RADIUS)
-      };
-  }
-}
+      var newNodes = nodes.enter()
+        .append('g')
+        .attr('class', 'node')
+        .attr('transform', function(d, i) {
+          var nodeCoords = v.getNodeCoordinates(i);
+          return 'translate(' + nodeCoords.x + ', ' +  nodeCoords.y + ')';
+        });
 
-function createMasterAndWorkers(labels) {
-  var nodes = svg.selectAll('g.node').data(nodeLabels);
+      newNodes.append('circle')
+        .attr('r', NODE_RADIUS)
+        .style('stroke', '#000')
+        .style('fill', function(d, i) {
+          if (i == 0) {
+            return '#f6f6f6';
+          } else {
+            return '#eaeaea';
+          }
+        });
 
-  var newNodes = nodes.enter()
-    .append('g')
-    .attr('class', 'node')
-    .attr('transform', function(d, i) {
-      var nodeCoords = getNodeCoordinates(i);
-      return 'translate(' + nodeCoords.x + ', ' +  nodeCoords.y + ')';
-    });
+      newNodes.append('text')
+        .attr('class', 'node-label')
+        .attr('text-anchor', 'middle')
+        .attr('dx', 0)
+        .attr('dy', 10)
+        .style('font-size', '0.7em')
+        .text(function(d) { return d });
+    };
 
-  newNodes.append('circle')
-    .attr('r', NODE_RADIUS)
-    .style('stroke', '#000')
-    .style('fill', function(d, i) {
-      if (i == 0) {
-        return '#f6f6f6';
-      } else {
-        return '#eaeaea';
+    /**
+     * Helper function to find splits at each depth in the tree
+     **/
+    var parseSplitsFromTreeData = function(tree_data, tree_stats) {
+      tree_data['depth'] = 0;
+      var queue = [tree_data];
+      var depthToSplits = d3.map();
+      while (queue.length > 0) {
+        var node = queue.shift();
+        var depth = node.depth;
+        var stat_node = tree_stats[node.id];
+        if (stat_node.has_children) {
+          var splitLocation = stat_node.split_location;
+          if (!depthToSplits.has(depth)) {
+            depthToSplits.set(depth, []);
+          }
+          depthToSplits.get(depth).push(splitLocation);
+
+          for (var i = 0; i < node.children.length; ++i) {
+            node.children[i]['depth'] = depth + 1;
+            queue.push(node.children[i]);
+          }
+        }
       }
+      return depthToSplits;
+    };
+
+    this.depthToSplits = parseSplitsFromTreeData(tree_data, tree_stats);
+
+    // need this later to compute bitvectors
+    this.dataIndexToColIndex = d3.map(_.range(NUM_SAMPLES), function(d) {
+      return tree_training_set[d]['index'];
     });
 
-  newNodes.append('text')
-    .attr('class', 'node-label')
-    .attr('text-anchor', 'middle')
-    .attr('dx', 0)
-    .attr('dy', 10)
-    .style('font-size', '0.7em')
-    .text(function(d) { return d });
-}
-
-createMasterAndWorkers(nodeLabels);
-
-function update(featureData, partitions, depth) {
-  var positionFeature = function(d, i) {
-    var locInfo = partitions[i];
-    var nodeCoords = getNodeCoordinates(locInfo.node);
-    return 'translate(' + nodeCoords.x + ', ' +  (nodeCoords.y + 1.5*NODE_RADIUS + locInfo.index*FEATURE_OFFSET) + ')';
-  };
-
-  var features = svg.selectAll('g.feature').data(featureData);
-  features.transition()
-    .attr('transform', positionFeature)
-    .duration(750)
-    .style('fill-opacity', 1);
-
-  features.each(function(d) {
-    this.barChart.render({
-      data: d.featureValues,
-      labels: d.labels,
-      depth: depth
+    // Data by columns, array of {featureName:, featureValues:[], labels: []}
+    this.dataByColumns = _.map(FEATURES, function(feature) {
+      var valuesAndLabels = _.chain(tree_training_set)
+          .map(function(datum) {
+            return [datum[feature], datum['target']];
+          })
+          .shuffle()
+          .unzip()
+          .value();
+      return {
+        featureName: feature,
+        featureValues: valuesAndLabels[0],
+        labels: valuesAndLabels[1]
+      };
     });
-  });
 
-  features.enter().append('g')
-    .attr('class', 'feature')
-    .each(function(d) {
-      this.barChart = new BarChart({
-        key: d.featureName,
-        g: this
+    // initially, if no argument is specified, we're in state 0
+    this.state = args.state || 0;
+
+    this.svg = d3.select('#' + args.id).append('svg')
+      .attr('width', width)
+      .attr('height', height);
+
+    var nodeLabels = ['master'];
+    for (var i = 0; i < K; ++i) {
+      nodeLabels.push('worker');
+    }
+    createMasterAndWorkers(nodeLabels);
+  },
+
+  /**
+   * Return bit vector (array of 0's and 1's)
+   * encoding the split(s) for a given depth
+   * in the tree
+   **/
+  getBitVectorForDepth: function(depth) {
+    var v = this;
+    var splits = this.depthToSplits.get(depth);
+    var bitVector = new Array(NUM_SAMPLES);
+    _.forEach(splits, function(split) {
+      _.forEach(split.left_side, function(d) {
+        bitVector[v.dataIndexToColIndex.get(d)] = 0;
       });
-      this.barChart.render({
+      _.forEach(split.right_side, function(d) {
+        bitVector[v.dataIndexToColIndex.get(d)] = 1;
+      });
+    });
+    return bitVector;
+  },
+
+  /**
+   * Get x and y coordinate for a master (index 0)
+   * or worker node (index >= 1)
+   **/
+  getNodeCoordinates: function(index) {
+    switch (index) {
+      case 0:
+        return {
+          x: (width / 2),
+          y: (1.1*NODE_RADIUS)
+        };
+      case 1:
+        return {
+          x: (NODE_RADIUS + PADDING_WIDTH),
+          y: (NODE_RADIUS + PADDING_TOP)
+        };
+      case 2:
+        return {
+          x: (width - PADDING_WIDTH - NODE_RADIUS),
+          y: (NODE_RADIUS + PADDING_TOP)
+        };
+      case 3:
+        return {
+          x: (NODE_RADIUS + PADDING_WIDTH),
+          y: (height - PADDING_BOTTOM - NODE_RADIUS)
+        };
+      case 4:
+        return {
+          x: (width - PADDING_WIDTH - NODE_RADIUS),
+          y: (height - PADDING_BOTTOM - NODE_RADIUS)
+        };
+    }
+  },
+
+  /**
+  /* assign all features to master
+  /**/
+  allOnMaster: function() {
+   return _.chain(FEATURES.length)
+      .range()
+      .map(function(i) {
+        return {
+          node: 0,
+          index: i
+        };
+      })
+      .value();
+  },
+
+  /**
+   * divide up the features amongst the workers
+   **/
+  partitionToWorkers: function() {
+    if (!this.partitionToWorkersCache) {
+      this.partitionToWorkersCache = _.chain(FEATURES.length)
+        .range()
+        .map(function(i) {
+          return {
+            node: Math.floor(i % K) + 1,
+            index: Math.floor(i / K)
+          };
+        })
+        .shuffle()
+        .value();
+    }
+    return this.partitionToWorkersCache;
+  },
+
+  /**
+   * compute split for each feature
+   **/
+  computeSplits: function(sortedColumns) {
+     if (!this.computeSplitsCache) {
+       this.computeSplitsCache = _.map(sortedColumns, function(d) {
+         // don't actually compute any stats; for now,
+         // just return the index of the median value
+         // if the split wasn't pre-computed
+         var splitPoint = (d.featureName === tree_data.key)
+                           ? parseFloat(tree_data.value)
+                           : d3.median(d.featureValues);
+         // for now, the gain for all other features
+         // is a random number that must be less than
+         // the pre-computed gain
+         var gain = (d.featureName === tree_data.key)
+                     ? parseFloat(tree_data.gini)
+                     : Math.random() * parseFloat(tree_data.gini);
+         return {
+           featureName: d.featureName,
+           index: d3.bisectLeft(d.featureValues, splitPoint),
+           split: splitPoint,
+           infoGain: gain
+         };
+       });
+     }
+     return this.computeSplitsCache;
+  },
+
+  /**
+   * find best feature split per worker
+   **/
+  bestSplitPerWorker: function(splits, workerAssignments) {
+    var assignmentsPerNode = _.chain(workerAssignments)
+      .map(function(d, i) {
+        return {
+          node: d.node,
+          index: i
+        };
+      })
+      .groupBy(function(d) {
+        return d.node;
+      })
+      .value();
+    var result = _.map(assignmentsPerNode, function(splitsOnNode) {
+      var feature = '';
+      var maxInfoGain = 0.0;
+      _.forEach(splitsOnNode, function(d) {
+        var split = splits[d.index];
+        if (split.infoGain >= maxInfoGain) {
+          feature = FEATURES[d.index];
+          maxInfoGain = split.infoGain;
+        }
+      });
+      return feature;
+    });
+    assert(result.indexOf('elevation') > -1, '"elevation" is not one of the best splits! ' + result.toString());
+
+    return result;
+  },
+
+  /**
+   * sort feature on worker by bitvector, then by value
+   **/
+  sortFeatureOnWorker: function(bitVector) {
+    return _.map(this.dataByColumns, function(feature) {
+      var valueAndLabel = _.chain(feature.featureValues)
+        .zip(feature.labels)
+        .sortBy(function(val) {
+          return parseFloat(val[0]);
+        })
+        .sortBy(function(val, index) {
+          return bitVector[index];
+        })
+        .unzip()
+        .value();
+
+      return {
+        featureName: feature.featureName,
+        featureValues: valueAndLabel[0],
+        labels: valueAndLabel[1]
+      };
+    });
+  },
+
+  /**
+   * Render algorithm stage, based on args.state (must be 0-6)
+   **/
+  update: function(args) {
+    _.extend(this, args);
+
+    // Default values to pass to render
+    var depth = 0;
+    var featureData = this.dataByColumns;
+    var splits = [];
+    var bestFeatures = [];
+    var bv = null;
+    switch (this.state) {
+      case 0:
+        this.workerAssignments = this.allOnMaster();
+        break;
+      case 1:
+        this.workerAssignments = this.partitionToWorkers();
+        break;
+      case 2:
+        featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
+        break;
+      case 3:
+        featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
+        splits = this.computeSplits(featureData);
+        break;
+      case 4:
+        featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
+        splits = this.computeSplits(featureData);
+        bestFeatures = this.bestSplitPerWorker(splits, this.workerAssignments);
+        break;
+      case 6:
+        bv = this.getBitVectorForDepth(depth);
+      case 5:
+        featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
+        splits = this.computeSplits(featureData);
+        bestFeatures = ['elevation']; // hard code it for now
+        break;
+      case 7:
+        featureData = this.sortFeatureOnWorker(this.getBitVectorForDepth(depth));
+        depth = 1;
+        break;
+    }
+    this.render(featureData, this.workerAssignments, depth,
+        _.map(splits, function(d) { return d.index; }), bestFeatures,
+        bv);
+  },
+
+  /**
+   * Called by render to update display after updating state machine
+   **/
+  render: function(featureData, partitions, depth, splits, bestFeaturePerWorker, bitVector) {
+    var v = this;
+    var positionFeature = function(d, i) {
+      var locInfo = partitions[i];
+      var nodeCoords = v.getNodeCoordinates(locInfo.node);
+      return 'translate(' + nodeCoords.x + ', ' +  (nodeCoords.y + 1.5*NODE_RADIUS + locInfo.index*FEATURE_OFFSET) + ')';
+    };
+
+    if (bitVector) {
+      var masterCoords = v.getNodeCoordinates(0);
+      for (var i = 0; i < K; ++i) {
+        var workerCoords = v.getNodeCoordinates(i + 1);
+        this.svg.append('text')
+          // can't fit all the bits, so just sample 50 of them
+          .text(_.sample(bitVector, 50).join(''))
+          .classed('bit-vector', true)
+          .attr('text-anchor', 'middle')
+          .style('font-size', '0.40em')
+          // these next two lines squish the characters so that
+          // they fit in only 200px
+          .attr('textLength', 200)
+          .attr('lengthAdjust', 'spacingAndGlyphs')
+          .attr('x', masterCoords.x)
+          .attr('y', masterCoords.y + NODE_RADIUS / 2)
+          // move bitvector from master to worker
+          .transition()
+          .attr('x', workerCoords.x)
+          .attr('y', workerCoords.y + NODE_RADIUS / 2)
+          .ease('bounce')
+          .duration(1000);
+      }
+    } else {
+      this.svg.selectAll('text.bit-vector').remove();
+    }
+
+    var features = this.svg.selectAll('g.feature').data(featureData);
+    features.transition()
+      .attr('transform', positionFeature)
+      .duration(750)
+      .style('fill-opacity', 1);
+
+    features.each(function(d, i) {
+      var args = {
         data: d.featureValues,
         labels: d.labels,
+        candidate: (bestFeaturePerWorker.indexOf(d.featureName) > -1),
+        best: (bestFeaturePerWorker.length == 1),
         depth: depth
-        // split: parseFloat(v.stats.split_point)
-      });
-    })
-    .attr('transform', positionFeature)
-    .append('text')
-    .text(function(d) { return d.featureName; })
-    .attr('class', 'feature-label')
-    .attr('text-anchor', 'middle')
-    .style('font-size', '0.55em')
-    .attr('fill', 'blue')
-    .attr('y', 0);
+      };
+      if (splits.length > 0) args.splitIndex = splits[i];
+      this.barChart.render(args);
+    });
 
-  features.exit().remove();
-}
+    features.enter().append('g')
+      .attr('class', 'feature')
+      .each(function(d) {
+        this.barChart = new BarChart({
+          key: d.featureName,
+          g: this
+        });
+        var args = {
+          data: d.featureValues,
+          labels: d.labels,
+          candidate: (bestFeaturePerWorker.indexOf(d.featureName) > -1),
+          best: (bestFeaturePerWorker.length == 1),
+          depth: depth
+        };
+      if (splits.length > 0) args.splitIndex = splits[i];
+        this.barChart.render(args);
+      })
+      .attr('transform', positionFeature)
+      .append('text')
+      .text(function(d) { return d.featureName; })
+      .classed('feature-label', true)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '0.55em')
+      .attr('y', 0);
 
-var dataIndexToColIndex = d3.map(_.range(250), function(d) {
-  return tree_training_set[d]['index'];
-});
+    features.selectAll('text')
+      .attr('fill', function(d) {
+        return (bestFeaturePerWorker.indexOf(d.featureName) > -1) ?
+          (bestFeaturePerWorker.length == 1) ? 'lawngreen' : 'crimson'
+          : 'blue';
+      })
+      .classed('grow', function(d) { return bestFeaturePerWorker.indexOf(d.featureName) > -1; });
 
-var ParseSplitsFromTreeData = function(tree_data, tree_stats) {
-  tree_data['depth'] = 0;
-  var queue = [tree_data];
-  var depthToSplits = d3.map();
-  while (queue.length > 0) {
-    var node = queue.shift();
-    var depth = node.depth;
-    var stat_node = tree_stats[node.id];
-    if (stat_node.has_children) {
-      var split_location = stat_node.split_location;
-      if (!depthToSplits.has(depth)) {
-        depthToSplits.set(depth, []);
-      }
-      depthToSplits.get(depth).push(split_location);
-
-      for (var i = 0; i < node.children.length; ++i) {
-        node.children[i]['depth'] = depth + 1;
-        queue.push(node.children[i]);
-      }
-    }
+    features.exit().remove();
   }
-  return depthToSplits;
-}
-
-var depthToSplits = ParseSplitsFromTreeData(tree_data, tree_stats);
-
-function getBitVectorForDepth(depth) {
-  var splits = depthToSplits.get(depth);
-  var bitVector = new Array(250);
-  _.forEach(splits, function(split) {
-    _.forEach(split.left_side, function(d) {
-      bitVector[dataIndexToColIndex.get(d)] = 0;
-    });
-    _.forEach(split.right_side, function(d) {
-      bitVector[dataIndexToColIndex.get(d)] = 1;
-    });
-  });
-  return bitVector;
-
-}
-
-// Data by columns, array of {featureName:, featureValues:[], labels: []}
-var dataByColumns = _.map(FEATURES, function(feature) {
-  var valuesAndLabels = _.chain(tree_training_set)
-      .map(function(datum) {
-        return [datum[feature], datum['target']];
-      })
-      .shuffle()
-      .unzip()
-      .value();
-  return {
-    featureName: feature,
-    featureValues: valuesAndLabels[0],
-    labels: valuesAndLabels[1]
-  };
 });
-
-// assign all features to master
-function allOnMaster() {
- return _.chain(FEATURES.length)
-    .range()
-    .map(function(i) {
-      return {
-        node: 0,
-        index: i
-      };
-    })
-    .value();
-}
-
-// divide up the features amongst the workers
-function partitionToWorkers() {
-  return _.chain(FEATURES.length)
-    .range()
-    .map(function(i) {
-      return {
-        node: Math.floor(i % K) + 1,
-        index: Math.floor(i / K)
-      };
-    })
-    .shuffle()
-    .value();
-}
-
-function sortFeatureOnWorker(bitVector) {
-  _.forEach(dataByColumns, function(feature) {
-    var valueAndLabel = _.chain(feature.featureValues)
-      .zip(feature.labels)
-      .sortBy(function(val) {
-        return parseFloat(val[0]);
-      })
-      .sortBy(function(val, index) {
-        return bitVector[index];
-      })
-      .unzip()
-      .value();
-
-    feature.featureValues = valueAndLabel[0];
-    feature.labels = valueAndLabel[1];
-  });
-}
-
-// assign all features to master first
-var workerAssignments = allOnMaster();
-update(dataByColumns, workerAssignments, -3);
-
-// now partition features across workers
-setTimeout(function() {
-  workerAssignments = partitionToWorkers();
-  update(dataByColumns, workerAssignments, -2);
-}, 2000);
 
 // now sort each column by value, and update the labels
-setTimeout(function() {
-  sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
-  update(dataByColumns, workerAssignments, -1);
-}, 4000);
+// setTimeout(function() {
+//   update(dataByColumns, workerAssignments, -1);
+// }, 4000);
 
 // now train
-var depth = 0;
-function train() {
-  var bv = getBitVectorForDepth(depth);
-  sortFeatureOnWorker(bv);
-  update(dataByColumns, workerAssignments, depth);
-  depth++;
-  if (depth < 1) {
-    setTimeout(train, 2000);
-  }
-}
-setTimeout(train, 6000);
+// var depth = 0;
+// function train() {
+//   var bv = getBitVectorForDepth(depth);
+//   sortFeatureOnWorker(bv);
+//   update(dataByColumns, workerAssignments, depth);
+//   depth++;
+//   if (depth < 1) {
+//     setTimeout(train, 2000);
+//   }
+// }
+// setTimeout(train, 6000);
 

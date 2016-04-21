@@ -34,7 +34,7 @@
   </head>
 
   <body>
-    <div class="reveal">
+    <div class='reveal'>
 
       <!-- This shows up on every slide -->
       <div class='footer'>
@@ -58,7 +58,7 @@
       </div>
 
       <!-- Any section element inside of this container is displayed as a slide -->
-      <div class="slides">
+      <div class='slides'>
         <section>
           <h1>
             Yggdrasil:
@@ -225,10 +225,20 @@
         </section>
 
         <section id='yggdrasil' style="text-align: left;">
-        <h2>Yggdrasil in Action</h2>
-        <div class='container' id='yggdrasil-algo'></div>
+          <h2>Yggdrasil in Action</h2>
+          <div style='float: left; width: 25%; font-size: 72%;'>
+            <ol class='algorithm'>
+              <li class='fragment vertical-padding'>Partition features across workers</li>
+              <li class='fragment vertical-padding'>Workers sort each feature by value</li>
+              <li class='fragment vertical-padding'>Compute best split for each feature</li>
+              <li class='fragment vertical-padding'>Pick best split for each worker, send split + bit vector to master</li>
+              <li class='fragment vertical-padding'>Master selects best global split among the candidates</li>
+              <li class='fragment vertical-padding'>Master sends bit vector for best global split to each worker</li>
+              <li class='fragment vertical-padding'>Worker sorts each feature by bit vector, then value</li>
+            </ol>
+          </div>
+          <div style ='float: right; width: 75%;' id='yggdrasil-algo'></div>
         </section>
-
 
         <section data-state='notation' style="text-align: left;">
           <h2>Results: Real-world Datasets</h2>
@@ -483,10 +493,29 @@
             draw();
 
             /** Code for Yggdrasil Algo **/
+            var state = 0;
+            var yggdrasilAlgo = new YggdrasilAlgo({
+              id: 'yggdrasil-algo',
+              state: state
+            });
+            yggdrasilAlgo.update();
+
             var yggdrasilAlgoKeyBindings = function() {
               var prev = function() {
+                Reveal.prev();
+                state--;
+                if (state < 0) {
+                state = 0;
+                }
+                yggdrasilAlgo.update({state: state});
               };
               var next = function() {
+                Reveal.next();
+                state++;
+                if (state > 7) {
+                  state = 7;
+                }
+                yggdrasilAlgo.update({state: state});
               };
               Reveal.configure({
                 keyboard: {
@@ -518,9 +547,10 @@
 
             /** Code for both **/
 
-            // remove all custom keyboard/scroll events,
-            // for both the decisionTreeTutorial and the
-            // yggdrasilAlgo slides
+            /**
+             * remove all custom keyboard/scroll events, for both the decisionTreeTutorial and the
+             * yggdrasilAlgo slides
+             **/
             var removeBindings = function() {
               document.removeEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
               Reveal.configure({

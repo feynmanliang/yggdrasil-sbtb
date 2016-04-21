@@ -225,7 +225,7 @@ body {
 
 /* Green */
 .correct {
-  color: #3cc83c; }
+  color: #14a023; }
 
 /* Red */
 .incorrect {
@@ -265,6 +265,18 @@ body {
   visibility: visible;
   opacity: 1;
   transition: opacity 0.3s, visibility 0.3s; }
+
+.reveal .slides section#yggdrasil .fragment.current-fragment {
+  color: #14a023; }
+
+.reveal .feature-label {
+  transition: all 0.3s ease-out;
+  -webkit-transform: scale(1);
+  transform: scale(1); }
+
+.reveal .feature-label.grow {
+  -webkit-transform: scale(1.3);
+  transform: scale(1.3); }
 
 /*********************************************
  * LINKS

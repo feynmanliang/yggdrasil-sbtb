@@ -80,6 +80,9 @@ $linkColorHover: lighten( $linkColor, 15% );
 $selectionBackgroundColor: #134674;
 $selectionColor: #fff;
 
+// Green color for things that are correct
+$correctColor: rgb(20,160,35);
+
 // Generates the presentation background, can be overridden
 // to return a background image or gradient
 @mixin bodyBackground() {
@@ -352,7 +355,7 @@ body {
 
 /* Green */
 .correct {
-  color: rgb(60,200,60);
+  color: $correctColor;
 }
 
 /* Red */
@@ -400,6 +403,21 @@ body {
   visibility: visible;
   opacity: 1;
   transition: opacity 0.3s, visibility 0.3s;
+}
+
+.reveal .slides section#yggdrasil .fragment.current-fragment {
+  color: $correctColor;
+}
+
+.reveal .feature-label {
+    transition: all 0.3s ease-out;
+    -webkit-transform: scale(1.0);
+            transform: scale(1.0);
+}
+
+.reveal .feature-label.grow {
+    -webkit-transform: scale(1.3);
+            transform: scale(1.3);
 }
 
 /*********************************************
