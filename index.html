@@ -343,17 +343,14 @@
         </section>
 
         <section style="text-align: left;">
-          <h2>Future work</h2>
+          <h2>Ongoing work</h2>
           <div>
             <div class='left'>
               <ul>
                 <li class='vertical-padding'>Better support for sparse features</il>
                 <li class='vertical-padding'>Lazy materialization: can we sort <span class='italic'>and</span> find split at the same time?</li>
-                <li class='vertical-padding'>Column compression: can we train on compressed data?</li>
-                <li class='vertical-padding'>Futher code improvements, publish as Spark package</li>
-                <ul>
-                  <li>Potentially integrate with Spark MLlib v1.7</li>
-                </ul>
+                <li class='vertical-padding'>Compressing features: can we train on compressed data <span class='italic'>without decompressing</span>?</li>
+                <li class='vertical-padding'>Futher code improvements, publish as Spark package/integrate with Spark MLlib v2.0</li>
                 <li class='vertical-padding'>Extend functionality further to support incremental updates, e.g. adding/removing features from dataset</li>
               </ul>
             </div>
@@ -566,6 +563,8 @@
                 decisionTreeTutorialKeyBindings();
                 document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
               } else if (event.indexh === yggdrasilAlgoIndex) {
+                state = ($(event.previousSlide).index() > yggdrasilAlgoIndex) ? 7 : 0;
+                yggdrasilAlgo.update({state: state});
                 yggdrasilAlgoKeyBindings();
               } else {
                 removeBindings();

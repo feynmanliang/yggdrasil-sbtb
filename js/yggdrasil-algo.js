@@ -4,7 +4,7 @@ const height = Math.min($(window).height() * 0.8, 700 * 0.9);
 
 const NODE_RADIUS = 50;
 const PADDING_TOP = 120;
-const PADDING_BOTTOM = 120;
+const PADDING_BOTTOM = 100;
 const PADDING_WIDTH = 125;
 const FEATURE_OFFSET = 75;
 const BAR_CHART_OFFSET = 6;
@@ -37,10 +37,10 @@ var BarChart = Backbone.View.extend({
     this.key = args.key;
     this.parentElem = args.g;
 
-    this.height = FEATURE_OFFSET / 3;
+    this.height = 0.4*FEATURE_OFFSET;
     this.orientation = 'HORIZONTAL';
 
-    this.barWidth = 1.0;
+    this.barWidth = 1.1;
     this.barGap = 0.25;
     this.growth = 1;
 
@@ -155,7 +155,7 @@ var BarChart = Backbone.View.extend({
           .style('fill-opacity', 1);
       }
       this.splitPath.transition()
-      .attr('fill', args.candidate ? args.best ? 'lawngreen' : 'crimson' : '#606060')
+      .attr('fill', args.candidate ? args.best ? 'forestgreen' : 'crimson' : '#606060')
       .duration(500);
 
       var x = this.splitLocation;
@@ -591,8 +591,16 @@ var YggdrasilAlgo = Backbone.View.extend({
     features.selectAll('text')
       .attr('fill', function(d) {
         return (bestFeaturePerWorker.indexOf(d.featureName) > -1) ?
-          (bestFeaturePerWorker.length == 1) ? 'lawngreen' : 'crimson'
+          (bestFeaturePerWorker.length == 1) ? 'forestgreen' : 'crimson'
           : 'blue';
+      })
+      .attr('font-weight', function(d) {
+        return (bestFeaturePerWorker.indexOf(d.featureName) > -1) &&
+               (bestFeaturePerWorker.length == 1) ? 'bold' : 'normal';
+      })
+      .attr('text-decoration', function(d) {
+        return (bestFeaturePerWorker.indexOf(d.featureName) > -1) &&
+               (bestFeaturePerWorker.length == 1) ? 'underline' : 'none';
       })
       .classed('grow', function(d) { return bestFeaturePerWorker.indexOf(d.featureName) > -1; });
 
