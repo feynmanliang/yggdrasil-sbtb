@@ -194,18 +194,20 @@
           </aside>
         </section>
 
+        <section>
+        <h1>Big Idea: Partition <span class='emph italic'>by column</span>
+        </section>
+
         <section data-state='notation' style="text-align: left;">
           <h2>The New Approach: Yggdrasil</h2>
           <div>
             <div style='float: left; width: 50%;'>
               <ul>
-                <li>Partition training set <span class='emph italic'>by column</span></li>
                 <li class='fragment'>
                   Each worker computes sufficient statistics on all of its
                   <span class='emph italic'>local features</span>
                   and sends the best feature to the master
                 </li>
-                <li class='fragment'>Same computational cost as before</li>
                 <li class='fragment correct'>No $B$ parameter; all thresholds considered</li>
                 <li class='fragment'><span class='highlight'>Communication cost:</span> $O(2^Dk + Dnk)$</li>
               </ul>
@@ -234,10 +236,31 @@
               <li class='fragment vertical-padding'>Pick best split for each worker, send split + bit vector to master</li>
               <li class='fragment vertical-padding'>Master selects best global split among the candidates</li>
               <li class='fragment vertical-padding'>Master sends bit vector for best global split to each worker</li>
-              <li class='fragment vertical-padding'>Worker sorts each feature by bit vector, then value</li>
+              <li class='fragment vertical-padding'>Worker sorts each feature by bit vector (using label indices), then value</li>
             </ol>
           </div>
           <div style ='float: right; width: 75%;' id='yggdrasil-algo'></div>
+        </section>
+
+        <section data-state='notation' style="text-align: left;">
+          <h2>Why sort?</h2>
+            <ul>
+              <li class='fragment vertical-padding'>Must keep track of the split history for each feature</li>
+              <li class='fragment vertical-padding'>New column per split $\rightarrow$ exponential memory overhead</li>
+              <li class='fragment vertical-padding correct'>With sorting, memory overhead is constant</li>
+            </ul>
+        </section>
+
+        <section data-state='notation' style="text-align: left;">
+          <h2>How expensive is sorting?</h2>
+          <div>
+              <p>Does Yggdrasil do an $O(n \log n)$ sort per iteration?</p>
+              <p class='fragment correct'>No!</p>
+              <ul>
+                <li class='fragment vertical-padding'>The first sort operation is $O(n \log n)$</li>
+                <li class='fragment vertical-padding correct'>Sorting based on bit vector is $O(n)$, since the data is already sorted</li>
+              </ul>
+          </div>
         </section>
 
         <section data-state='notation' style="text-align: left;">
