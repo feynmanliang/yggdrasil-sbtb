@@ -19,18 +19,16 @@
 
     <!-- Printing and PDF exports -->
     <script>
-      var link = document.createElement( 'link' );
+      var link = document.createElement('link');
       link.rel = 'stylesheet';
       link.type = 'text/css';
-      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-      document.getElementsByTagName( 'head' )[0].appendChild( link );
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
     </script>
 
     <!--[if lt IE 9]>
     <script src="lib/js/html5shiv.js"></script>
     <![endif]-->
-    <style type="text/css">
-    </style>
   </head>
 
   <body>
@@ -62,10 +60,12 @@
         <section>
           <h1>
             Yggdrasil:
+            <!--
             <sub>
               <a href="https://www.youtube.com/watch?v=undaZKGe578">1</a>,
               <a href="https://en.wikipedia.org/wiki/Yggdrasil">2</a>
             </sub>
+            -->
             Faster Decision Trees using Column Partitioning in Spark
           </h1>
           <table align='center' class='author'>
@@ -75,10 +75,6 @@
             </tr>
             <tr>
               <td>Feynman Liang</td>
-              <td>Peter Cnudde</td>
-            </tr>
-            <tr>
-              <td>Hirakendu Das</td>
               <td>Andrew Feng</td>
             </tr>
             <tr>
@@ -90,12 +86,17 @@
             </tr>
           </table>
           <div style='margin-top: 25px;'>
-            <img src='images/databricks.png' width="30%"></img>
-            <img src='images/csail.gif' width="15%"></img>
-            <img src='images/yahoo-logo.png' width="30%"></img>
+            <img src='images/databricks.png' height='60px'></img>
+            <img src='images/mit.png' height='60px'></img>
+            <img src='images/yahoo-logo.png' height='60px'></img>
+          </div>
+          <div style='margin-top: 25px;'>
+            <img src='images/ucla.png' height='60px'></img>
+            <img src='images/cambridge.png' height='60px'></img>
           </div>
         </section>
 
+        <!--
         <section id='decision-tree' style='text-align: left;'>
           <h2>A (Brief) Decision Tree Tutorial<sub><a href="http://www.r2d3.us/visual-intro-to-machine-learning-part-1/">3</a></sub></h2>
           <div style='float: left; width: 30%;'>
@@ -130,6 +131,7 @@
           </ol>
           </aside>
         </section>
+        -->
 
         <section data-state='notation' style='text-align: left;'>
           <h2>
@@ -139,9 +141,11 @@
           <div>
             <div style='float: left; width: 49%;'>
               <ul>
-                <li>Partition training set <span class='emph italic'>by row</span></li>
+                <li class='fragment'>Partition training set <span class='emph italic'>by row</span></li>
                 <li class='fragment'>Each worker computes sufficient statistics on subset of training data</li>
-                <li class='fragment'>Since data partitioned by row, workers must compute statistics <span class='emph italic'>for all features</span></li>
+                <li class='fragment'>Since data partitioned by row, workers must compute statistics
+                  <span class='emph italic'>for all features</span>
+                </li>
                 <li class='fragment'><span class='highlight'>Communication cost:</span> $O(2^DkpB)$</li>
               </ul>
             </div>
@@ -226,6 +230,28 @@
           </aside>
         </section>
 
+        <section data-state='notation' style="text-align: left;">
+          <h2>The Tradeoffs: Yggdrasil vs. PLANET</h2>
+          <div class='center'>
+            <img data-src='plots/n-vs-p.svg' width="75%"></img>
+            <div class='caption'>$D=15,k=16,B=32$</div>
+          </div>
+        </section>
+
+        <section data-state='notation' style="text-align: left;">
+          <h2>The Tradeoffs: Yggdrasil vs. PLANET</h2>
+          <div style='float: left; width: 70%;'>
+            <img data-src='plots/n-vs-d.svg' width="100%"></img>
+            <div class='caption'>$p=2500,k=16,B=32$</div>
+          </div>
+          <div style='float: right; width: 30%; transform: translateY(60%);'>
+            <span class='highlight'>Key takeaway:</span>
+            <span class='correct'>
+              Yggdrasil is more efficient than PLANET for large $p$ and $D$
+            </span>
+          </div>
+        </section>
+
         <section id='yggdrasil' style="text-align: left;">
           <h2>Yggdrasil in Action</h2>
           <div style='float: left; width: 25%; font-size: 72%;'>
@@ -263,10 +289,29 @@
           </div>
         </section>
 
+        <section style="text-align: left;">
+          <h2>Optimizations</h2>
+          <div>
+            <!--<div style='float: left; width: 40%;'>-->
+            <div>
+              <ul>
+                <li>Sparse bitvectors</li>
+                <li>Label encoding</li>
+                <li>Columnar compression: Run-Length Encoding</li>
+              </ul>
+            </div>
+            <!--<div style='float: right; width: 59%'>-->
+            <div class='center'>
+              <img data-src='plots/individual_optimizations.svg' width="85%"></img>
+            </div>
+          </div>
+        </section>
+
+
         <section data-state='notation' style="text-align: left;">
           <h2>Results: Real-world Datasets</h2>
           <div style='float: left; width: 75%;'>
-            <img data-src='images/mnist-8m.svg' width='100%'></img>
+            <img data-src='plots/mnist-8m.svg' width='100%'></img>
             <div class='caption'>$k=16,B=32$</div>
           </div>
           <div style='float: right; width: 25%; transform: translateY(100%);'>
@@ -288,7 +333,7 @@
         <section data-state='notation' style="text-align: left;">
           <h2>Results: Real-world Datasets</h2>
           <div style='float: left; width: 75%;'>
-            <img data-src='images/yahoo.svg' width="100%"></img>
+            <img data-src='plots/yahoo.svg' width="100%"></img>
             <div class='caption'>$k=16,B=32$</div>
           </div>
           <div style='float: right; width: 25%; transform: translateY(100%);'>
@@ -307,6 +352,7 @@
           </div>
         </section>
 
+        <!--
         <section data-state='notation' style="text-align: left;">
           <h2>Results: Accuracy</h2>
           <div style='float: left; width: 75%;'>
@@ -322,11 +368,12 @@
             </span>
           </div>
         </section>
+        -->
 
         <section data-state='notation' style="text-align: left;">
           <h2>Results: Scalability</h2>
           <div class='center'>
-            <img data-src='images/communication.svg' width="75%"></img>
+            <img data-src='plots/communication.svg' width="75%"></img>
             <div class='caption'>$n=2\times 10^6, k=16, B=32$<br/>(Note: For Yggdrasil, communication cost is independent of $p$!)</div>
           </div>
         </section>
@@ -334,7 +381,7 @@
         <section data-state='notation' style="text-align: left;">
           <h2>Results: Scalability</h2>
           <div style='float: left; width: 75%;'>
-            <img data-src='images/by-feature.svg' width="100%"></img>
+            <img data-src='plots/by-feature.svg' width="100%"></img>
             <div class='caption'>$n=2\times 10^6, k=16, B=32$</div>
           </div>
           <div style='float: right; width: 25%; transform: translateY(75%);'>
@@ -343,28 +390,7 @@
           </div>
         </section>
 
-        <section data-state='notation' style="text-align: left;">
-          <h2>The Tradeoffs: Yggdrasil vs. PLANET</h2>
-          <div class='center'>
-            <img data-src='images/n-vs-p.svg' width="75%"></img>
-            <div class='caption'>$D=15,k=16,B=32$</div>
-          </div>
-        </section>
-
-        <section data-state='notation' style="text-align: left;">
-          <h2>The Tradeoffs: Yggdrasil vs. PLANET</h2>
-          <div style='float: left; width: 70%;'>
-            <img data-src='images/n-vs-d.svg' width="100%"></img>
-            <div class='caption'>$p=2500,k=16,B=32$</div>
-          </div>
-          <div style='float: right; width: 30%; transform: translateY(60%);'>
-            <span class='highlight'>Key takeaway:</span>
-            <span class='correct'>
-              Yggdrasil is more efficient than PLANET for large $p$ and $D$
-            </span>
-          </div>
-        </section>
-
+        <!--
         <section style="text-align: left;">
           <h2>Ongoing work</h2>
           <div>
@@ -379,6 +405,7 @@
             </div>
           </div>
         </section>
+        -->
 
         <section>
           <h1>THANKS!</h1>
@@ -433,13 +460,14 @@
             const NEXT_PAGE = 100;
             const SCROLL_DELTA = 5;
 
-            var decisionTree = new DecisionTreeView({
-              el: $('#decision-tree-tutorial'),
-              data: {
-                tree: tree_data,
-                stats: tree_stats
-              }
-            });
+            // var decisionTree = new DecisionTreeView({
+            //   el: $('#decision-tree-tutorial'),
+            //   data: {
+            //     tree: tree_data,
+            //     stats: tree_stats
+            //   }
+            // });
+
             var scroll = PREV_PAGE;
 
             var decisionTreeTutorialKeyBindings = function() {
@@ -508,10 +536,6 @@
               decisionTree.handleScroll(scroll);
             };
 
-            // render (initially) decision tree tutorial, regardless of what slide we're on
-            Dispatcher.trigger('resize');
-            draw();
-
             /** Code for Yggdrasil Algo **/
             var state = 0;
             var yggdrasilAlgo = new YggdrasilAlgo({
@@ -566,6 +590,9 @@
             };
 
             /** Code for both **/
+            // initially render decision tree tutorial & yggdrasil algo, regardless of what slide we're on
+            Dispatcher.trigger('resize');
+            draw();
 
             /**
              * remove all custom keyboard/scroll events, for both the decisionTreeTutorial and the
