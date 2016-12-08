@@ -28,8 +28,8 @@ var RevealMath = window.RevealMath || (function(){
 
                 MathJax.Hub.Register.StartupHook('End', function () {
                   // needs to be set in a callback -- otherwise MathJax may override static styles
-                  $('.dataset-info').css('font-size','0.60em');
-                  $('.caption').css('font-size','0.62em');
+                  // $('.dataset-info').css('font-size','0.60em');
+                  // $('.caption').css('font-size','0.62em');
                 });
 
 		// Reprocess equations in slides when they turn visible

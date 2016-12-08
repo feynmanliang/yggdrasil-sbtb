@@ -102,6 +102,9 @@ body {
 .reveal ol {
   list-style-type: decimal; }
 
+.reveal li {
+  margin-top: 15px; }
+
 .reveal ul {
   list-style-type: disc; }
 
@@ -211,6 +214,20 @@ body {
 .reveal table td {
   border-bottom: none; }
 
+.reveal table.border {
+  border: solid 1px;
+  margin: 1px; }
+
+.reveal table.border td {
+  border: solid 1px;
+  padding: 0.4em; }
+
+.reveal .dataset-info {
+  font-size: 0.60em; }
+
+.reveal .caption {
+  font-size: 0.62em; }
+
 .reveal .emph {
   font-weight: 600; }
 
@@ -220,24 +237,27 @@ body {
 .reveal .italic {
   font-style: italic; }
 
+.reveal .small-caps {
+  font-variant: small-caps; }
+
 .reveal .vertical-padding {
   padding: 5px 0; }
 
 /* Green */
-.correct {
+.reveal .correct {
   color: #14a023; }
 
 /* Red */
-.incorrect {
+.reveal .incorrect {
   color: #bd1400; }
 
-.tree-green {
+.reveal .tree-green {
   color: #41992b; }
 
-.tree-blue {
+.reveal .tree-blue {
   color: #104683; }
 
-.center {
+.reveal .center {
   text-align: center; }
 
 .reveal section .caption {
