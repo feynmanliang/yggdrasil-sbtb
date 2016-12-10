@@ -36,7 +36,12 @@
 
       <!-- This shows up on every slide -->
       <div class='footer'>
-        <a href='https://github.com/fabuzaid21/yggdrasil-nips-2016-talk'>View on GitHub</a>
+        <!--<div>
+          Code: <a href='https://github.com/fabuzaid21/yggdrasil-nips-2016-talk'>https://github.com/fabuzaid21/yggdrasil-nips-2016-talk</a>
+        </div>-->
+        <div>
+          <a href='http://firasabuzaid.com/yggdrasil-nips-2016-talk'>http://bit.ly/ygg-slides</a>
+        </div>
       </div>
       
       <!--
@@ -138,7 +143,7 @@
               </ul>
               <li class='fragment'>As data grows in size $(n)$ and dimensionality $(p)$, two issues arise:</li>
               <ol>
-                <li class='fragment'>Training sets can’t fit on a single machine—more nodes required for training</li>
+                <li class='fragment'>Training sets can’t fit on a single machine—more machines required for training</li>
                 <li class='fragment'>Deeper trees (e.g., $D \geq$ 10) are needed; greater depth $\rightarrow$ higher model accuracy</li>
               </ol>
             </ul>
@@ -158,8 +163,9 @@
           <div>
             <div style='float: left; width: 50%;'>
               <ul>
-                <li class='fragment'>Partition training set <span class='emph highlight'>by training instance</span> (i.e., by row)</li>
-                <li class='fragment'>Each worker computes sufficient statistics on <span class='emph highlight'>subset</span> of training data</li>
+                <li class='fragment'>Partition training set <span class='emph highlight'>by row</span> (i.e., by training instance)</li>
+                <li class='fragment'>Each worker computes sufficient statistics
+                on <span class='emph highlight'>subset</span> of training data</li>
                 <li class='fragment'>Since data partitioned by row, workers must compute statistics
                   <span class='emph highlight'>for all features</span>
                 </li>
@@ -177,15 +183,21 @@
           <div>
             <div style='float: left; width: 50%;'>
               <ul>
-                <li class='fragment'>Communication cost between nodes scales poorly as $p$ and $D$ increase</li> 
-                <li class='fragment'>To limit communication, workers only consider $B$ thresholds, number of histogram buckets</li>
+                <li class='fragment' data-fragment-index='0'>Communication cost between workers scales poorly as $p$ and $D$ increase</li>
+                  <ul>
+                    <li class='fragment' data-fragment-index='0'>See <a
+                        href='https://papers.nips.cc/paper/6381-a-communication-efficient-parallel-algorithm-for-decision-tree.pdf'>Meng
+                        et al., 2016</a>–also at this year's NIPS!</li>
+                  </ul>
+                <li class='fragment' data-fragment-index='2'>To limit communication, workers only consider $B$ thresholds</li>
                 <ul class='fragment'>
-                  <li>Instead of $n-1$, like in the single-node algorithm</li>
+                  <li>Instead of $n-1$, like in the single-machine case</li>
+                  <li>$B \ll n$</li>
                   <li>Optimal split may not always be found!</li>
                 </ul>
               </ul>
             </div>
-            <div style='float: right; width: 50%; transform: translateY(10%);'>
+            <div class='fragment' data-fragment-index='2' style='float: right; width: 50%; transform: translateY(10%);'>
               <img data-src='images/planet-paper-excerpt.png' width='100%'/>
               <div class='caption'>Excerpt from page 5 of the <a class='small-caps'
                   href='http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf'>Planet</a>
@@ -223,7 +235,7 @@
         </section>
 
         <section>
-        <h1>Big Idea: Partition <span class='emph'>by column</span></h1>
+          <h1>Big Idea: Partition <span class='emph'>by column</span></h1>
         </section>
 
         <section style='text-align: left;'>
@@ -235,9 +247,9 @@
                 <li class='fragment'>
                   Each worker computes sufficient statistics on all <span class='emph highlight'>local features</span>
                 </li>
-                <li class='fragment'>Send locally optimal feature to master; master picks globally optimal</li>
+                <li class='fragment'>Master performs no aggregation; only responsible for picking globally optimal</li>
                 <li class='fragment correct'>No $B$ parameter; no tradeoff for finding optimal split</li>
-                <li class='fragment correct'>Equivalent to serial algorithm on a single node</li>
+                <li class='fragment correct'>Equivalent to serial algorithm on a single machine</li>
               </ul>
             </div>
             <div style='float: right; width: 50%'>
@@ -246,67 +258,97 @@
           </div>
         </section>
 
-        <section style='text-align: left;'>
-          <h2>Tale of the Tape: Planet vs. Yggdrasil </h2>
-          <div class='center'>
-            <img data-src='images/yggdrasil-vs-planet-diagram.png' width='77%'/>
-            <img data-src='images/yggdrasil-vs-planet-table.png' width='77%'/>
-          </div>
-        </section>
-
-        <section style='text-align: left;'>
-          <h2>Tale of the Tape: Planet vs. Yggdrasil</h2>
-          <div style='float: left; width: 50%;'>
-            <img style='max-width: 105%;' data-src='plots/n-vs-p.svg' width='105%'/>
-            <!--<div class='caption'>$D=15,k=16,B=32$</div>-->
-          </div>
-          <div style='float: right; width: 50%;'>
-            <img style='max-width: 105%;' data-src='plots/n-vs-d.svg' width='105%'/>
-            <!--<div class='caption'>$p=2500,k=16,B=32$</div>-->
-          </div>
-          <div class='center fragment' style='padding: 0 50px 0 50px;'>
-            <span class='highlight'>Key takeaway:</span>
-            <span class='correct'>
-              Yggdrasil is more efficient than <span class='small-caps'>Planet</span> for large $p$ and $D$
-            </span>
-          </div>
-        </section>
-
-        <!--<section style='text-align: left;'>
-          <h2>Tale of the Tape: Yggdrasil vs. Planet</h2>
-          <div style='float: left; width: 70%;'>
-            <img data-src='plots/n-vs-d.svg' width='100%'/>
-            <div class='caption'>$p=2500,k=16,B=32$</div>
-          </div>
-          </section>-->
-
-        <section>
-        <h1>Big Idea: Partition <span class='emph'>by column</span><sup class='fragment' data-fragment-index='1'>*</sup></h1>
-        <div class='fragment' data-fragment-index='1' style='position: relative; top: 16em; font-size: 0.6em;'>
-          <sup>*</sup>Ye et al., 2009; Svore and Burges, 2011; Caragea et al., 2004
-        </div>
-        </section>
-
-        <section>
-        <h1 style='font-size: 1.45em;'>In theory, theory and practice are the same.</h1>
-        <h1 style='font-size: 1.45em;' class='fragment emph'>In practice, they are not.</h1>
-        </section>
-
-        <section id='yggdrasil' style='text-align: left;'>
+        <section id='yggdrasil1' style='text-align: left;'>
           <h2>Yggdrasil in Action</h2>
           <div style='float: left; width: 25%; font-size: 72%;'>
             <ol class='algorithm'>
-              <li class='fragment vertical-padding' style='margin-top: 0px;'>Partition features across workers</li>
-              <li class='fragment vertical-padding' style='margin-top: 0px;'>Workers sort each feature by value</li>
-              <li class='fragment vertical-padding' style='margin-top: 0px;'>Compute best split for each feature</li>
-              <li class='fragment vertical-padding' style='margin-top: 0px;'>Pick best split for each worker, send split + bit vector to master</li>
-              <li class='fragment vertical-padding' style='margin-top: 0px;'>Master selects best global split among the candidates</li>
-              <li class='fragment vertical-padding' style='margin-top: 0px;'>Master sends bit vector for best global split to each worker</li>
-              <li class='fragment vertical-padding' style='margin-top: 0px;'>Worker sorts each feature by bit vector (using label indices), then value</li>
+              <li class='fragment'>Partition features across workers</li>
+              <li class='fragment'>Workers sort each feature by value</li>
+              <li class='fragment'>Compute best split for each feature</li>
+              <li class='fragment'>Pick best split for each worker, send split to master</li>
+              <li class='fragment'>Master selects best global split among the candidates</li>
             </ol>
           </div>
-          <div style ='float: right; width: 75%;' id='yggdrasil-algo'></div>
+          <div style ='float: right; width: 75%;' id='yggdrasil-algo1'></div>
         </section>
+
+        <section style='text-align: left;'>
+          <h2>Tale of the Tape: Planet vs. Yggdrasil </h2>
+          <div class='center' style='position: relative; margin-top: -1%;'>
+            <div class='fragment fade-out' data-fragment-index='1' style='position: absolute;'>
+              <img data-src='images/yggdrasil-vs-planet-diagram.png' width='78%'/>
+            </div>
+            <div class='fragment' data-fragment-index='1' style='position: relative;'>
+              <div style='float: left; width: 50%;'>
+                <img data-src='plots/n-vs-p.svg' width='100%'/>
+                <!--<div class='caption'>$D=15$</div>-->
+              </div>
+              <div class='fragment' data-fragment-index='2' style='float: right; width: 50%;'>
+                <img data-src='plots/n-vs-d.svg' width='100%'/>
+                <!--<div class='caption'>$p=2500$</div>-->
+              </div>
+            </div>
+            <div>
+              <img data-src='images/yggdrasil-vs-planet-table.png' width='75%'/>
+              <div class='center fragment' data-fragment-index='3' style='padding: 0 50px 0 50px;'>
+                &#128273; <span class='correct'>Yggdrasil is more efficient
+                  than <span class='small-caps'>Planet</span> for large $p$ and
+                  $D$</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h1>Big Idea: Partition <span class='emph'>by column</span><sup class='fragment' data-fragment-index='1'>*</sup></h1>
+          <div class='fragment' data-fragment-index='1' style='position: relative; top: 16em; font-size: 0.65em;'>
+            *<a href='http://dl.acm.org/citation.cfm?id=1232798'>Caragea et al., 2004</a>;
+            <a href='http://www.csee.ogi.edu/~zak/cs506-pslc/sgradboostedtrees.pdf'>Ye et al., 2009</a>;
+            <a href='https://books.google.com/books?id=9u0gAwAAQBAJ&lpg=PA148&ots=lw1WL5auoD&dq=svore%20and%20burges%20large%20scale%20learning%20to%20rank%20using%20boosted%20decision%20trees&lr&pg=PA148#v=onepage&q=svore%20and%20burges%20large%20scale%20learning%20to%20rank%20using%20boosted%20decision%20trees&f=false'>Svore and Burges, 2011</a>
+          </div>
+        </section>
+
+        <section>
+          <h1>If people have thought of this before...</h1>
+          <h1 class='fragment emph'>how come no one's done this before?</h1>
+        </section>
+
+        <section>
+          <h1>In theory, theory and practice are the same</h1>
+          <h1 class='fragment emph'>In practice, they are not</h1>
+        </section>
+
+        <section style='text-align: left;'>
+          <h2>Ain't as easy as it looks</h2>
+          <div>
+            <img data-src='images/meng-et-al-excerpt.png' width='100%'/>
+            <div class='caption'>Excerpt from page 2 of <a
+                href='https://papers.nips.cc/paper/6381-a-communication-efficient-parallel-algorithm-for-decision-tree.pdf'>Meng et al., 2016</a>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h1>If the facts don't fit the theory...</h1>
+          <h1 class='fragment emph'>change the facts</h1>
+        </section>
+
+
+        <section id='yggdrasil2' style='text-align: left;'>
+          <h2>Yggdrasil in Action</h2>
+          <div style='float: left; width: 25%; font-size: 72%;'>
+            <ol class='algorithm'>
+              <li >Partition features across workers</li>
+              <li >Workers sort each feature by value</li>
+              <li >Compute best split for each feature</li>
+              <li >Pick best split for each worker, send split <span class='emph highlight correct'>+ bit vector</span> to master</li>
+              <li >Master selects best global split among the candidates</li>
+              <li class='fragment'>Master sends bit vector for best global split to each worker</li>
+              <li class='fragment'>Worker sorts each feature by bit vector (using label indices), then value</li>
+            </ol>
+          </div>
+          <div style ='float: right; width: 75%;' id='yggdrasil-algo2'></div>
+          </section>
 
         <section style='text-align: left;'>
           <h2>Why sort?</h2>
@@ -323,8 +365,8 @@
               <p>Does Yggdrasil do an $O(n \log n)$ sort per iteration?</p>
               <p class='fragment correct'>No!</p>
               <ul>
-                <li class='fragment vertical-padding'>The first sort operation is $O(n \log n)$</li>
-                <li class='fragment vertical-padding correct'>Sorting based on bit vector is $O(n)$, since the data is already sorted</li>
+                <li class='fragment'>The first sort operation is $O(n \log n)$</li>
+                <li class='fragment correct'>Sorting based on bit vector is $O(n)$, since the data is already sorted</li>
               </ul>
           </div>
         </section>
@@ -359,7 +401,7 @@
             </div>
           </div>
           <div style='float: right; width: 25%; transform: translateY(100%);'>
-            <div style='font-size: 0.65em;'>Dataset Info:</div>
+            <div style='font-size: 0.65em;'>Parameters:</div>
             <div class='dataset-info'>
               <table class='border' align='center'>
                 <tr><td># instances</td><td>8.1 $\times$ 10<sup>6</sup></td></tr>
@@ -382,7 +424,7 @@
             </div>
           </div>
           <div style='float: right; width: 25%; transform: translateY(100%);'>
-            <div style='font-size: 0.65em;'>Dataset Info:</div>
+            <div style='font-size: 0.65em;'>Parameters:</div>
             <div class='dataset-info'>
               <table class='border' align='center'>
                 <tr><td># instances</td><td>2 $\times$ 10<sup>6</sup></td></tr>
@@ -431,34 +473,68 @@
             </div>
             <!--<div class='caption'>$n=2\times 10^6, k=16, B=32$</div>-->
           </div>
-          <div class='fragment' style='float: right; width: 25%; transform: translateY(75%);'>
-            <span class='highlight'>Key takeaway:</span>
-            <span class='correct'>Empirical results match the expected tradeoffs</span>
-          </div>
-        </section>
-
-        <!--
-        <section style="text-align: left;">
-          <h2>Ongoing work</h2>
-          <div>
-            <div class='left'>
-              <ul>
-                <li class='vertical-padding'>Better support for sparse features</il>
-                <li class='vertical-padding'>Lazy materialization: can we sort <span class='italic'>and</span> find split at the same time?</li>
-                <li class='vertical-padding'>Compressing features: can we train on compressed data <span class='italic'>without decompressing</span>?</li>
-                <li class='vertical-padding'>Futher code improvements, publish as Spark package/integrate with Spark MLlib v2.0</li>
-                <li class='vertical-padding'>Extend functionality further to support incremental updates, e.g. adding/removing features from dataset</li>
-              </ul>
+          <div style='float: right; width: 25%; transform: translateY(50%);'>
+            <div style='font-size: 0.65em;'>Parameters:</div>
+            <div class='dataset-info'>
+              <table class='border' align='center'>
+                <tr><td># instances</td><td>2 $\times$ 10<sup>6</sup></td></tr>
+                <tr><td>Task</td><td>regression</td></tr>
+              </table>
+              <div class='fragment' style='font-size: 1.5em; margin-top: 10%;'>
+                &#128273; <span class='correct'>Empirical results match the
+                  expected tradeoffs</span>
+              </div>
             </div>
           </div>
         </section>
-        -->
+
+        <section>
+          <h1>Okay, this looks kinda cool</h1>
+          <h1 class='emph fragment'>Can I actually use it?</h1>
+          <h1 class='fragment correct'>You can!</h1>
+        </section>
+
+        <section style='text-align: left;'>
+          <h2>Using Yggdrasil</h2>
+          <div>
+            <div style='float: left; width: 55%;'>
+              <ul>
+                <li class='fragment' data-fragment-index='0'>
+                  Yggdrasil is open-source:<br/>
+                  <a style='font-size: 0.83em;' href='https://github.com/fabuzaid21/yggdrasil'>https://github.com/fabuzaid21/yggdrasil</a>
+                </li>
+                <ul class='fragment' data-fragment-index='0'>
+                  <li>Pull requests welcomed!</li>
+                </ul>
+                <li class='fragment' data-fragment-index='1'>
+                  Also available as a Spark package:<br/>
+                  <a style='font-size: 0.83em;' href='https://bit.ly/ygg-spark'>https://bit.ly/ygg-spark</a>
+                </li>
+                <ul class='fragment' data-fragment-index='1'>
+                  <li>Compatible with Spark 1.6+</li>
+                </ul>
+                <li class='fragment' data-fragment-index='2'>Code already written in Spark MLlib? Not a problem!</li>
+              </ul>
+            </div>
+            <div style='float: right; width: 45%;'>
+              <div class='fragment' data-fragment-index='2' style='margin-top: 15px;'>
+                <img data-src='images/mllib-code.png' width='115%'/>
+              </div>
+              <div class='fragment' data-fragment-index='3'>
+                <div class='center'>
+                  <img data-src='images/arrow.svg' width='10%'/>
+                </div>
+                <img data-src='images/yggdrasil-code.png' width='115%'/>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section>
           <h1>Future Work</h1>
         </section>
 
-        <section style='text-align: left'>
+        <section style='text-align: left;'>
           <h2>Why should I have to choose?</h2>
           <div style='float: left; width: 50%;'>
             <ul>
@@ -468,8 +544,8 @@
             </ul>
           </div>
           <div style='float: right; width: 50%;'>
-            <img data-src='plots/n-vs-d.svg' width='85%'/>
-            <img data-src='plots/n-vs-p.svg' width='85%'/>
+            <img data-src='plots/n-vs-d.svg' width='75%'/>
+            <img data-src='plots/n-vs-p.svg' width='75%' style='margin-top: -5%;'/>
           </div>
         </section>
 
@@ -483,6 +559,7 @@
             <ul>
               <li class='fragment'>Merge Yggdrasil into Spark MLlib 2.1</li>
               <li class='fragment'>Add decision rule that automatically chooses best algorithm for you <span class='emph highlight'>a priori</span></li>
+              <li class='fragment'>Add support for approximate binning</li>
               <li class='fragment'>Single feature doesn't fit on a single node? <a href='https://www.youtube.com/watch?v=xjzzLelV0Y0'>Fix it!</a></li>
             </ul>
           </div>
@@ -490,10 +567,10 @@
 
         <section style='text-align: left;'>
           <h2>Thanks!</h2>
-          <div style='float: left; width: 70%;'>
+          <div style='float: left; width: 60%;'>
             Any questions? Shoot me an email:<br/>fabuzaid at cs dot stanford dot edu
           </div>
-          <div style='float: right; width: 30%'>
+          <div style='float: left; width: 30%;'>
             <img data-src='images/firas.jpg' width='100%'/>
           </div>
         </section>
@@ -624,57 +701,71 @@
             };
 
             /** Code for Yggdrasil Algo **/
-            var state = 0;
-            var yggdrasilAlgo = new YggdrasilAlgo({
-              id: 'yggdrasil-algo',
-              state: state
-            });
-            yggdrasilAlgo.update();
-
-            var yggdrasilAlgoKeyBindings = function() {
-              var prev = function() {
+            var yggdrasilAlgoKeyBindings = function(yggdrasilAlgo, initState, maxState) {
+              var obj = {
+                state: initState,
+                f: function() {
+                  var v = this;
+                  Reveal.configure({
+                    keyboard: {
+                      // p, page up
+                      80: v.prev,
+                      33: v.prev,
+                      // h, left
+                      72: v.prev,
+                      37: v.prev,
+                      // k, up
+                      75: v.prev,
+                      38: v.prev,
+                      // n, page down
+                      78: v.next,
+                      34: v.next,
+                      // l, right
+                      76: v.next,
+                      39: v.next,
+                      // j, down
+                      74: v.next,
+                      40: v.next,
+                      // ENTER
+                      13: v.next,
+                      // SPACE
+                      32: v.next
+                    }
+                  });
+                }
+              };
+              obj.prev = function() {
                 Reveal.prev();
-                state--;
-                if (state < 0) {
-                state = 0;
+                obj.state--;
+                if (obj.state < initState) {
+                  obj.state = initState;
                 }
-                yggdrasilAlgo.update({state: state});
+                yggdrasilAlgo.update({state: obj.state});
               };
-              var next = function() {
+              obj.next = function() {
                 Reveal.next();
-                state++;
-                if (state > 7) {
-                  state = 7;
+                obj.state++;
+                if (obj.state > maxState) {
+                  obj.state = maxState;
                 }
-                yggdrasilAlgo.update({state: state});
+                yggdrasilAlgo.update({state: obj.state});
               };
-              Reveal.configure({
-                keyboard: {
-                  // p, page up
-                  80: prev,
-                  33: prev,
-                  // h, left
-                  72: prev,
-                  37: prev,
-                  // k, up
-                  75: prev,
-                  38: prev,
-                  // n, page down
-                  78: next,
-                  34: next,
-                  // l, right
-                  76: next,
-                  39: next,
-                  // j, down
-                  74: next,
-                  40: next,
-                  // ENTER
-                  13: next,
-                  // SPACE
-                  32: next
-                }
-              });
+              return obj;
             };
+
+            var algo1 = new YggdrasilAlgo({
+              id: 'yggdrasil-algo1',
+              state: ALL_ON_MASTER
+            });
+            algo1.update();
+            var algo1KeyBindings = yggdrasilAlgoKeyBindings(algo1, ALL_ON_MASTER, BEST_GLOBAL_SPLIT);
+
+            var algo2 = new YggdrasilAlgo({
+              id: 'yggdrasil-algo2',
+              state: BEST_GLOBAL_SPLIT
+            });
+            algo2.update();
+            var algo2KeyBindings = yggdrasilAlgoKeyBindings(algo2, BEST_GLOBAL_SPLIT, SORT_WITH_BIT_VECTOR);
 
             /** Code for both **/
             // initially render decision tree tutorial & yggdrasil algo, regardless of what slide we're on
@@ -693,16 +784,21 @@
             };
 
             var decisionTreeIndex = $('section').index($('#decision-tree'));
-            var yggdrasilAlgoIndex = $('section').index($('#yggdrasil'));
+            var algoIndex1 = $('section').index($('#yggdrasil1'));
+            var algoIndex2 = $('section').index($('#yggdrasil2'));
 
             Reveal.addEventListener( 'slidechanged', function(event) {
               if (event.indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
                 document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
-              } else if (event.indexh === yggdrasilAlgoIndex) {
-                state = ($(event.previousSlide).index() > yggdrasilAlgoIndex) ? 7 : 0;
-                yggdrasilAlgo.update({state: state});
-                yggdrasilAlgoKeyBindings();
+              } else if (event.indexh === algoIndex1) {
+                algo1KeyBindings.state = ($(event.previousSlide).index() > algoIndex1) ? BEST_GLOBAL_SPLIT : ALL_ON_MASTER;
+                algo1.update({state: algo1KeyBindings.state});
+                algo1KeyBindings.f();
+              } else if (event.indexh === algoIndex2) {
+                algo2KeyBindings.state = ($(event.previousSlide).index() > algoIndex2) ? SORT_WITH_BIT_VECTOR : BEST_GLOBAL_SPLIT;
+                algo2.update({state: algo2KeyBindings.state});
+                algo2KeyBindings.f();
               } else {
                 removeBindings();
               }
@@ -712,8 +808,10 @@
            if (Reveal.getState().indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
                 document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
-            } else if (Reveal.getState().indexh === yggdrasilAlgoIndex) {
-                yggdrasilAlgoKeyBindings();
+            } else if (Reveal.getState().indexh === algoIndex1) {
+                algo1KeyBindings.f();
+            } else if (Reveal.getState().indexh === algoIndex2) {
+                algo2KeyBindings.f();
             }
 
           })();

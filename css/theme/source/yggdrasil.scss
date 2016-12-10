@@ -61,14 +61,14 @@ $headingMargin: 0 0 $blockMargin 0;
 $headingFont: 'Quicksand', sans-serif;
 $headingColor: #333;
 $headingLineHeight: 1.2;
-$headingLetterSpacing: -0.08em;
+$headingLetterSpacing: -0.02em;
 $headingTextTransform: uppercase;
 $headingTextShadow: none;
 $headingFontWeight: normal;
 $heading1TextShadow: $headingTextShadow;
 
-$heading1Size: 1.5em;
-$heading2Size: 1.2em;
+$heading1Size: 1.35em;
+$heading2Size: 1.15em;
 $heading3Size: 1.0em;
 $heading4Size: 0.9em;
 
@@ -175,7 +175,6 @@ body {
 }
 
 /* Ensure certain elements are never larger than the slide itself */
-.reveal img,
 .reveal video,
 .reveal iframe {
 	max-width: 100%;
@@ -194,7 +193,6 @@ body {
 .reveal dl,
 .reveal ul {
 	display: inline-block;
-
 	text-align: left;
 	margin: 0 0 0 1em;
 }
@@ -209,6 +207,14 @@ body {
 
 .reveal ul {
 	list-style-type: disc;
+}
+
+.reveal ul.key {
+        list-style-type: none;
+}
+
+.reveal ul.key li:before {
+        content: '\1F511 \0000a0\0000a0'
 }
 
 .reveal ul ul {
@@ -375,8 +381,9 @@ body {
   font-variant: small-caps;
 }
 
-.reveal .vertical-padding {
+.reveal ol.algorithm li {
   padding: 5px 0;
+  margin-top: 0px;
 }
 
 /* Green */
@@ -407,8 +414,8 @@ body {
 
 .reveal .footer {
   position: absolute;
-  bottom: 1em;
-  left: 1em;
+  bottom: 0.5em;
+  left: 0.3em;
   font-size: 0.55em;
   z-index: 1000;
 }
@@ -430,7 +437,11 @@ body {
   transition: opacity 0.3s, visibility 0.3s;
 }
 
-.reveal .slides section#yggdrasil .fragment.current-fragment {
+.reveal .slides section#yggdrasil1 .fragment.current-fragment {
+  color: $correctColor;
+}
+
+.reveal .slides section#yggdrasil2 .fragment.current-fragment {
   color: $correctColor;
 }
 

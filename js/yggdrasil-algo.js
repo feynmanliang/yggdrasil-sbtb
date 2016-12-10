@@ -5,9 +5,9 @@ const height = Math.min($(window).height() * 0.8, 700 * 0.9);
 const NODE_RADIUS = 50;
 const PADDING_TOP = 120;
 const PADDING_BOTTOM = 100;
-const PADDING_WIDTH = 125;
-const FEATURE_OFFSET = 75;
-const BAR_CHART_OFFSET = 6;
+const PADDING_WIDTH = 140;
+const FEATURE_OFFSET = 60;
+const BAR_CHART_OFFSET = 5;
 const TRIANGLE_LENGTH = 7;
 
 const K = 2; // num. workers
@@ -21,6 +21,18 @@ const FEATURES = [
         'sqft',
         'year_built',
       ];
+
+// enums to control the state machine during animation
+const ALL_ON_MASTER = 0;
+const PARTITION_FEATURES = 1;
+const SORT_FEATURES = 2;
+const COMPUTE_SPLITS = 3;
+const BEST_LOCAL_SPLIT = 4;
+const BEST_GLOBAL_SPLIT = 5;
+const SEND_BIT_VECTOR = 6;
+const SORT_WITH_BIT_VECTOR = 7;
+const SINGLE_BAR_WIDTH = 1.1;
+const SINGLE_BAR_GAP = 0.25;
 
 function assert(condition, message) {
     if (!condition) {
@@ -40,8 +52,8 @@ var BarChart = Backbone.View.extend({
     this.height = 0.4*FEATURE_OFFSET;
     this.orientation = 'HORIZONTAL';
 
-    this.barWidth = 1.1;
-    this.barGap = 0.25;
+    this.barWidth = SINGLE_BAR_WIDTH;
+    this.barGap = SINGLE_BAR_GAP;
     this.growth = 1;
 
     this.handleResize({
@@ -100,7 +112,7 @@ var BarChart = Backbone.View.extend({
     if (!this.g) {
       this.g = d3.select(this.parentElem).append('g')
         .attr('class', 'barChart')
-        .attr('transform', 'translate(' + (-3.1*NODE_RADIUS) + ',' + BAR_CHART_OFFSET + ')');
+        .attr('transform', 'translate(' + (-(this.totalWidth)/2) + ',' + BAR_CHART_OFFSET + ')');
     }
 
     this.selection = this.g.selectAll('.bin').data(this.data);
@@ -471,33 +483,32 @@ var YggdrasilAlgo = Backbone.View.extend({
     var splits = [];
     var bestFeatures = [];
     var bv = null;
-    switch (this.state) {
-      case 0:
+    if (this.state == ALL_ON_MASTER) {
         this.workerAssignments = this.allOnMaster();
-        break;
-      case 1:
+    } else {
         this.workerAssignments = this.partitionToWorkers();
-        break;
-      case 2:
+    }
+    switch (this.state) {
+      case SORT_FEATURES:
         featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
         break;
-      case 3:
+      case COMPUTE_SPLITS:
         featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
         splits = this.computeSplits(featureData);
         break;
-      case 4:
+      case BEST_LOCAL_SPLIT:
         featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
         splits = this.computeSplits(featureData);
         bestFeatures = this.bestSplitPerWorker(splits, this.workerAssignments);
         break;
-      case 6:
+      case SEND_BIT_VECTOR:
         bv = this.getBitVectorForDepth(depth);
-      case 5:
+      case BEST_GLOBAL_SPLIT:
         featureData = this.sortFeatureOnWorker(_.range(NUM_SAMPLES).map(function() { return 0; }));
         splits = this.computeSplits(featureData);
-        bestFeatures = ['elevation']; // hard code it for now
+        bestFeatures = ['elevation']; // hard-code it for now
         break;
-      case 7:
+      case SORT_WITH_BIT_VECTOR:
         featureData = this.sortFeatureOnWorker(this.getBitVectorForDepth(depth));
         depth = 1;
         break;
@@ -565,7 +576,7 @@ var YggdrasilAlgo = Backbone.View.extend({
 
     features.enter().append('g')
       .attr('class', 'feature')
-      .each(function(d) {
+      .each(function(d, i) {
         this.barChart = new BarChart({
           key: d.featureName,
           g: this
@@ -577,7 +588,7 @@ var YggdrasilAlgo = Backbone.View.extend({
           best: (bestFeaturePerWorker.length == 1),
           depth: depth
         };
-      if (splits.length > 0) args.splitIndex = splits[i];
+        if (splits.length > 0) args.splitIndex = splits[i];
         this.barChart.render(args);
       })
       .attr('transform', positionFeature)
@@ -607,22 +618,4 @@ var YggdrasilAlgo = Backbone.View.extend({
     features.exit().remove();
   }
 });
-
-// now sort each column by value, and update the labels
-// setTimeout(function() {
-//   update(dataByColumns, workerAssignments, -1);
-// }, 4000);
-
-// now train
-// var depth = 0;
-// function train() {
-//   var bv = getBitVectorForDepth(depth);
-//   sortFeatureOnWorker(bv);
-//   update(dataByColumns, workerAssignments, depth);
-//   depth++;
-//   if (depth < 1) {
-//     setTimeout(train, 2000);
-//   }
-// }
-// setTimeout(train, 6000);
 
