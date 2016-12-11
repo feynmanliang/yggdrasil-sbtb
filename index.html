@@ -92,8 +92,7 @@
             <img src='images/databricks.png' height='60px'/>-->
           </div>
           <a class='fragment'
-            href='http://papers.nips.cc/paper/6366-yggdrasil-an-optimized-system-for-training-deep-decision-trees-at-scale.pdf'>Full
-            paper presented at NIPS 2016</a>
+            href='http://papers.nips.cc/paper/6366-yggdrasil-an-optimized-system-for-training-deep-decision-trees-at-scale.pdf'>Presented at NIPS 2016</a>
         </section>
 
         <!--
@@ -142,9 +141,9 @@
                 <li>Easy to debug; easy to tune, easy to understand</li>
               </ul>
               <li class='fragment'>As data grows in size $(n)$ and dimensionality $(p)$, two issues arise:</li>
-              <ol>
-                <li class='fragment'>Training sets can’t fit on a single machine—more machines required for training</li>
-                <li class='fragment'>Deeper trees (e.g., $D \geq$ 10) are needed; greater depth $\rightarrow$ higher model accuracy</li>
+              <ol class='fragment'>
+                <li>Training sets can’t fit on a single machine—more machines required for training</li>
+                <li>Deeper trees (e.g., $D \geq$ 10) are needed; greater depth $\rightarrow$ higher model accuracy</li>
               </ol>
             </ul>
           </div>
@@ -163,7 +162,7 @@
           <div>
             <div style='float: left; width: 50%;'>
               <ul>
-                <li class='fragment'>Partition training set <span class='emph highlight'>by row</span> (i.e., by training instance)</li>
+                <li class='fragment'>Partition training set <span class='emph highlight'>by row</span></li>
                 <li class='fragment'>Each worker computes sufficient statistics
                 on <span class='emph highlight'>subset</span> of training data</li>
                 <li class='fragment'>Since data partitioned by row, workers must compute statistics
@@ -181,23 +180,23 @@
         <section style='text-align: left;'>
           <h2>The Problem with Planet</h2>
           <div>
-            <div style='float: left; width: 50%;'>
+            <div style='float: left; width: 48%;'>
               <ul>
                 <li class='fragment' data-fragment-index='0'>Communication cost between workers scales poorly as $p$ and $D$ increase</li>
                   <ul>
-                    <li class='fragment' data-fragment-index='0'>See <a
+                    <li class='fragment' data-fragment-index='0'><a
                         href='https://papers.nips.cc/paper/6381-a-communication-efficient-parallel-algorithm-for-decision-tree.pdf'>Meng
                         et al., 2016</a>–also at this year's NIPS!</li>
                   </ul>
                 <li class='fragment' data-fragment-index='2'>To limit communication, workers only consider $B$ thresholds</li>
                 <ul class='fragment'>
-                  <li>Instead of $n-1$, like in the single-machine case</li>
+                  <li>Instead of $n-1$, like in the serial algorithm</li>
                   <li>$B \ll n$</li>
                   <li>Optimal split may not always be found!</li>
                 </ul>
               </ul>
             </div>
-            <div class='fragment' data-fragment-index='2' style='float: right; width: 50%; transform: translateY(10%);'>
+            <div class='fragment' data-fragment-index='2' style='float: right; width: 51%; transform: translateY(10%);'>
               <img data-src='images/planet-paper-excerpt.png' width='100%'/>
               <div class='caption'>Excerpt from page 5 of the <a class='small-caps'
                   href='http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36296.pdf'>Planet</a>
@@ -213,37 +212,41 @@
             <span class='highlight'>Three problems:</span>
               <ol>
                 <span class='incorrect'>
-                  <li class='fragment' style='margin-top: 0px;'>Another hyperparameter to tune: $B$</li>
-                  <li class='fragment'>Important tradeoff:</li>
+                  <li style='margin-top: 0px;'>Another hyperparameter to tune: $B$</li>
+                  <li>Important tradeoff:</li>
                 </span>
-                <ul>
-                  <li class='fragment'
+                <ul style='list-style-type: none;'>
+                  <li
                   style='background-color: #dec026; text-align: center;
-                  list-style-type: none; padding: 10px 0 10px 0;
+                  padding: 10px 0 10px 0;
                   margin-left: 25%; margin-right: 25%;
                   border-radius: 10px;'>
                   finding optimal split<br/>&#8597;<br/>runtime efficiency
                   </li>
+                  <li class='incorrect' style='margin-left: 25%;
+                    margin-right: 25%; text-align: center;'><a
+                      href='https://papers.nips.cc/paper/6381-a-communication-efficient-parallel-algorithm-for-decision-tree.pdf'>Meng
+                      et al.</a> improve the tradeoff—but it's still there</li>
                 </ul>
-                <span class='incorrect'>
-                  <li class='fragment'>
-                    Large $p$ and $D$ $\rightarrow$ poor runtime (even if you choose optimal $B$!)
-                  </li>
-                </span>
+                <li class='incorrect'>
+                  Large $p$ and $D$ $\rightarrow$ poor runtime (even if you choose optimal $B$!)
+                </li>
               </ol>
           </div>
         </section>
 
+        <!--
         <section>
           <h1>Big Idea: Partition <span class='emph'>by column</span></h1>
         </section>
+        -->
 
         <section style='text-align: left;'>
           <h2>Yggdrasil: The New Approach</h2>
           <div>
             <div style='float: left; width: 50%;'>
               <ul>
-                <li class='fragment'>Partition training set <span class='emph highlight'>by feature</span></li>
+                <li class='fragment'>Partition training set <span class='emph highlight'>by column</span></li>
                 <li class='fragment'>
                   Each worker computes sufficient statistics on all <span class='emph highlight'>local features</span>
                 </li>
@@ -265,7 +268,7 @@
               <li class='fragment'>Partition features across workers</li>
               <li class='fragment'>Workers sort each feature by value</li>
               <li class='fragment'>Compute best split for each feature</li>
-              <li class='fragment'>Pick best split for each worker, send split to master</li>
+              <li class='fragment'>Pick best feature for each worker, send feature's split to master</li>
               <li class='fragment'>Master selects best global split among the candidates</li>
             </ol>
           </div>
@@ -275,15 +278,17 @@
         <section style='text-align: left;'>
           <h2>Tale of the Tape: Planet vs. Yggdrasil </h2>
           <div class='center' style='position: relative; margin-top: -1%;'>
-            <div class='fragment fade-out' data-fragment-index='1' style='position: absolute;'>
+            <!--<div class='fragment fade-out' data-fragment-index='1' style='position: absolute;'>
               <img data-src='images/yggdrasil-vs-planet-diagram.png' width='78%'/>
-            </div>
-            <div class='fragment' data-fragment-index='1' style='position: relative;'>
+            </div>-->
+            <!--<div class='fragment' data-fragment-index='1' style='position: relative;'>-->
+            <div style='position: relative;'>
               <div style='float: left; width: 50%;'>
                 <img data-src='plots/n-vs-p.svg' width='100%'/>
                 <!--<div class='caption'>$D=15$</div>-->
               </div>
-              <div class='fragment' data-fragment-index='2' style='float: right; width: 50%;'>
+              <!--<div class='fragment' data-fragment-index='2' style='float: right; width: 50%;'>-->
+              <div style='float: right; width: 50%;'>
                 <img data-src='plots/n-vs-d.svg' width='100%'/>
                 <!--<div class='caption'>$p=2500$</div>-->
               </div>
@@ -299,24 +304,24 @@
           </div>
         </section>
 
-        <section>
-          <h1>Big Idea: Partition <span class='emph'>by column</span><sup class='fragment' data-fragment-index='1'>*</sup></h1>
-          <div class='fragment' data-fragment-index='1' style='position: relative; top: 16em; font-size: 0.65em;'>
-            *<a href='http://dl.acm.org/citation.cfm?id=1232798'>Caragea et al., 2004</a>;
-            <a href='http://www.csee.ogi.edu/~zak/cs506-pslc/sgradboostedtrees.pdf'>Ye et al., 2009</a>;
-            <a href='https://books.google.com/books?id=9u0gAwAAQBAJ&lpg=PA148&ots=lw1WL5auoD&dq=svore%20and%20burges%20large%20scale%20learning%20to%20rank%20using%20boosted%20decision%20trees&lr&pg=PA148#v=onepage&q=svore%20and%20burges%20large%20scale%20learning%20to%20rank%20using%20boosted%20decision%20trees&f=false'>Svore and Burges, 2011</a>
+        <section style='text-align: left;'>
+          <h2>But Column-Partitioning has been done before!</h2>
+          <div>
+            <ul>
+              <li>
+                <a href='http://dl.acm.org/citation.cfm?id=1232798'>Caragea et al., 2004</a>;
+                <a href='http://www.csee.ogi.edu/~zak/cs506-pslc/sgradboostedtrees.pdf'>Ye et al., 2009</a>;
+                <a href='https://books.google.com/books?id=9u0gAwAAQBAJ&lpg=PA148&ots=lw1WL5auoD&dq=svore%20and%20burges%20large%20scale%20learning%20to%20rank%20using%20boosted%20decision%20trees&lr&pg=PA148#v=onepage&q=svore%20and%20burges%20large%20scale%20learning%20to%20rank%20using%20boosted%20decision%20trees&f=false'>Svore and Burges, 2011</a>
+              </li>
+              <li class='fragment'>If people have thought of this before...<span class='fragment emph'>why is it not done in practice?</span></li>
+            </ul>
           </div>
         </section>
 
-        <section>
-          <h1>If people have thought of this before...</h1>
-          <h1 class='fragment emph'>how come no one's done this before?</h1>
-        </section>
-
-        <section>
+        <!--<section>
           <h1>In theory, theory and practice are the same</h1>
           <h1 class='fragment emph'>In practice, they are not</h1>
-        </section>
+        </section>-->
 
         <section style='text-align: left;'>
           <h2>Ain't as easy as it looks</h2>
@@ -328,11 +333,10 @@
           </div>
         </section>
 
-        <section>
+        <!--<section>
           <h1>If the facts don't fit the theory...</h1>
           <h1 class='fragment emph'>change the facts</h1>
-        </section>
-
+        </section>-->
 
         <section id='yggdrasil2' style='text-align: left;'>
           <h2>Yggdrasil in Action</h2>
@@ -341,58 +345,127 @@
               <li >Partition features across workers</li>
               <li >Workers sort each feature by value</li>
               <li >Compute best split for each feature</li>
-              <li >Pick best split for each worker, send split <span class='emph highlight correct'>+ bit vector</span> to master</li>
+              <li >Pick best feature for each worker, send feature's split <span class='emph highlight correct'>+ bit vector</span> to master</li>
               <li >Master selects best global split among the candidates</li>
               <li class='fragment'>Master sends bit vector for best global split to each worker</li>
-              <li class='fragment'>Worker sorts each feature by bit vector (using label indices), then value</li>
+              <li class='fragment'>Worker sorts each feature by bit vector, then value</li>
             </ol>
           </div>
           <div style ='float: right; width: 75%;' id='yggdrasil-algo2'></div>
-          </section>
+        </section>
+
+        <section style='text-align: left;'>
+          <h2>Itty-bitty Details</h2>
+          <div>
+            <ul>
+              <li>
+                Bitvectors encode the partitioning of instances for each split
+                <ul class='fragment'>
+                  <li>1 = left child, 0 = right child</li>
+                  <li>Lookups performed using label indices</li>
+                  <li>$O(Dn)$ term now isn't quite as scary</li>
+                </ul>
+              </li>
+              <li class='fragment'>
+                Training is done per-depth, <span class='italic'>not</span> per-node
+                <ul>
+                  <li>Single bitvector for all active leaves in the tree</li>
+                </ul>
+              </li>
+              <li class='fragment'>All workers send split + bitvector, even if the split is not used</li>
+              <ul>
+                <li class='fragment incorrect'>Downside: Wasted bits</li>
+                <li class='fragment correct'>Upside: Only one roundtrip needed for one iteration of training</li>
+              </ul>
+            </ul>
+          </div>
+        </section>
 
         <section style='text-align: left;'>
           <h2>Why sort?</h2>
             <ul>
               <li class='fragment'>Must keep track of the split history for each feature</li>
-              <li class='fragment'>New column per split $\rightarrow$ exponential memory footprint</li>
-              <li class='fragment correct'>With sorting, memory overhead is constant</li>
+              <li class='fragment incorrect'>New column per split $\rightarrow$ exponential memory footprint</li>
+              <li class='fragment'>If we sort...</li>
+              <ul class='fragment correct'>
+                <li>Sorting based on bit vector is $O(n)$, since the data is already sorted</li>
+                <li>Memory overhead is constant</li>
+                <li>Computing splits across all leaves still only requires a single scan over all the features</li>
+                <li>What about leaves that don't need to be split? Just skip the sub-array!</li>
+              </ul>
             </ul>
         </section>
 
+        <!--
         <section style='text-align: left;'>
           <h2>How expensive is sorting?</h2>
           <div>
               <p>Does Yggdrasil do an $O(n \log n)$ sort per iteration?</p>
-              <p class='fragment correct'>No!</p>
+              <p class='fragment correct' style='margin-bottom: 0;'>No!</p>
               <ul>
                 <li class='fragment'>The first sort operation is $O(n \log n)$</li>
-                <li class='fragment correct'>Sorting based on bit vector is $O(n)$, since the data is already sorted</li>
               </ul>
+          </div>
+        </section>
+        -->
+
+        <section style='text-align: left;'>
+          <h2>Additional Optimizations</h2>
+          <div>
+            <!--<div style='float: left; width: 40%;'>-->
+            <div>
+              <p style='margin-bottom: 0;'>Partitioning by column unlocks the potential for more optimizations:</p>
+              <ul>
+                <ol>
+                  <li>Sparse bitvectors</li>
+                  <li>Label encoding</li>
+                  <li class='fragment correct'>Columnar compression: Train on compressed features—without decompression!</li>
+                </ol>
+              </ul>
+            </div>
           </div>
         </section>
 
         <section style='text-align: left;'>
-          <h2>Optimizations</h2>
+          <h2>Training on Compressed Features</h2>
           <div>
             <!--<div style='float: left; width: 40%;'>-->
             <div>
               <ul>
-                <li>Sparse bitvectors</li>
-                <li>Label encoding</li>
-                <li>Columnar compression: Train on compressed features—without decompression!</li>
+                <li>
+                  Idea popularized by the databases community
+                  <ol>
+                    <li>Sort column</li>
+                    <li>Compress column using run-length encoding (RLE), delta encoding, etc.</li>
+                    <li class='fragment correct'>That's it! Never have to fully materialize (i.e., decompress) the column again</li>
+                  </ol>
+                </li>
+                <li class='fragment'>Works well for sparse features</li>
               </ul>
-            </div>
-            <!--<div style='float: right; width: 59%'>-->
-            <div class='center'>
-              <img data-src='plots/individual_optimizations.svg' width='78%'/>
             </div>
           </div>
         </section>
 
+        <section style='text-align: left;'>
+          <h2>Training on Compressed Features</h2>
+          <div>
+            <!--<div style='float: left; width: 40%;'>-->
+            <div>
+              <ul>
+                <li>We already need to sort the features to perform greedy split-finding</li>
+                <li>Feature values are visited in sequential order, so we never have to decompress!</li>
+                <ul>
+                  <li class='fragment incorrect'>Downside: Can't use our sorting trick anymore; need data structure to keep track of split history</li>
+                  <li class='fragment correct'>Upside: Feature can now fit entirely in cache; no more DRAM accesses</li>
+                </ul>
+              </ul>
+            </div>
+          </div>
+        </section>
 
         <section style='text-align: left;'>
           <h2>Results: Real-world Datasets</h2>
-          <div style='float: left; width: 75%; position: relative;'>
+          <div style='float: left; width: 72%; position: relative;'>
             <div style='position: absolute;'>
               <img class='fragment fade-out' data-fragment-index='1' data-src='plots/mnist-8m.svg' width='100%'/>
             </div>
@@ -400,13 +473,13 @@
               <img class='fragment' data-fragment-index='1' data-src='plots/mnist-8m-speedup.svg' width='100%'/>
             </div>
           </div>
-          <div style='float: right; width: 25%; transform: translateY(100%);'>
+          <div style='float: right; width: 28%; transform: translateY(100%);'>
             <div style='font-size: 0.65em;'>Parameters:</div>
             <div class='dataset-info'>
               <table class='border' align='center'>
                 <tr><td># instances</td><td>8.1 $\times$ 10<sup>6</sup></td></tr>
                 <tr><td># features</td><td>784</td></tr>
-                <tr><td>Size</td><td>18.2 GB</td></tr>
+                <tr><td>Size</td><td>18.2 GB (sparse)</td></tr>
                 <tr><td>Task</td><td>classification</td></tr>
               </table>
             </div>
@@ -415,7 +488,7 @@
 
         <section style='text-align: left;'>
           <h2>Results: Real-world Datasets</h2>
-          <div style='float: left; width: 75%; position: relative;'>
+          <div style='float: left; width: 72%; position: relative;'>
             <div style='position: absolute;'>
               <img class='fragment fade-out' data-fragment-index='1' data-src='plots/yahoo.svg' width='100%'/>
             </div>
@@ -423,13 +496,13 @@
               <img class='fragment' data-fragment-index='1' data-src='plots/yahoo-speedup.svg' width='100%'/>
             </div>
           </div>
-          <div style='float: right; width: 25%; transform: translateY(100%);'>
+          <div style='float: right; width: 28%; transform: translateY(100%);'>
             <div style='font-size: 0.65em;'>Parameters:</div>
             <div class='dataset-info'>
               <table class='border' align='center'>
                 <tr><td># instances</td><td>2 $\times$ 10<sup>6</sup></td></tr>
                 <tr><td># features</td><td>3500</td></tr>
-                <tr><td>Size</td><td>52.2 GB</td></tr>
+                <tr><td>Size</td><td>52.2 GB (dense)</td></tr>
                 <tr><td>Task</td><td>regression</td></tr>
               </table>
             </div>
@@ -456,10 +529,18 @@
 
         <section style='text-align: left;'>
           <h2>Results: Scalability</h2>
-          <div class='center'>
-            <img data-src='plots/communication.svg' width='75%'/>
-            <!--<div class='caption'>$n=2\times 10^6, k=16, B=32$<br/>(Note: For Yggdrasil, communication cost is independent of $p$!)</div>-->
+          <div style='float: left; width: 75%;'>
+            <img data-src='plots/communication.svg' width='100%'/>
           </div>
+          <div style='float: right; width: 25%; transform: translateY(300%);'>
+            <div style='font-size: 0.65em;'>Parameters:</div>
+            <div class='dataset-info'>
+              <table class='border' align='center'>
+                <tr><td># instances</td><td>2 $\times$ 10<sup>6</sup></td></tr>
+              </table>
+            </div>
+          </div>
+            <!--<div class='caption'>$n=2\times 10^6, k=16, B=32$<br/>(Note: For Yggdrasil, communication cost is independent of $p$!)</div>-->
         </section>
 
         <section style='text-align: left;'>
@@ -473,14 +554,14 @@
             </div>
             <!--<div class='caption'>$n=2\times 10^6, k=16, B=32$</div>-->
           </div>
-          <div style='float: right; width: 25%; transform: translateY(50%);'>
+          <div style='float: right; width: 25%; height: 100%; transform: translateY(50%);'>
             <div style='font-size: 0.65em;'>Parameters:</div>
             <div class='dataset-info'>
               <table class='border' align='center'>
                 <tr><td># instances</td><td>2 $\times$ 10<sup>6</sup></td></tr>
                 <tr><td>Task</td><td>regression</td></tr>
               </table>
-              <div class='fragment' style='font-size: 1.5em; margin-top: 10%;'>
+              <div class='fragment' data-fragment-index='1' style='font-size: 1.5em; margin-top: 10%;'>
                 &#128273; <span class='correct'>Empirical results match the
                   expected tradeoffs</span>
               </div>
@@ -488,11 +569,34 @@
           </div>
         </section>
 
+        <section style='text-align: left;'>
+          <h2>Results: Optimizations</h2>
+          <div style='float: left; width: 75%; position: relative;'>
+            <img style='position: absolute;' data-src='plots/individual_optimizations_1.svg' width='100%'/>
+            <img style='position: absolute;' class='fragment no-animation current-visible' data-fragment-index='0' data-src='plots/individual_optimizations_3.svg' width='100%'/>
+            <img style='position: relative;' class='fragment no-animation' data-fragment-index='1' data-src='plots/individual_optimizations_4.svg' width='100%'/>
+          </div>
+          <div style='float: right; width: 25%; transform: translateY(30%);'>
+            <div style='font-size: 0.65em;'>Parameters:</div>
+            <div class='dataset-info'>
+              <table class='border' align='center'>
+                <tr><td>Dataset</td><td>MNIST 8M</td></tr>
+                <tr><td>Depth</td><td>10</td></tr>
+              </table>
+              <div class='fragment' data-fragment-index='1' style='font-size: 1.5em; margin-top: 10%;'>
+                &#128273; <span class='correct'>Optimizations improve runtime, particularly for sparse datasets</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!--
         <section>
           <h1>Okay, this looks kinda cool</h1>
           <h1 class='emph fragment'>Can I actually use it?</h1>
           <h1 class='fragment correct'>You can!</h1>
         </section>
+        -->
 
         <section style='text-align: left;'>
           <h2>Using Yggdrasil</h2>
@@ -530,6 +634,7 @@
           </div>
         </section>
 
+        <!--
         <section>
           <h1>Future Work</h1>
         </section>
@@ -552,6 +657,7 @@
         <section>
           <h1 class='correct'>You should!</h1>
         </section>
+        -->
 
         <section style='text-align: left;'>
           <h2>Future Work</h2>
@@ -568,11 +674,19 @@
         <section style='text-align: left;'>
           <h2>Thanks!</h2>
           <div style='float: left; width: 60%;'>
-            Any questions? Shoot me an email:<br/>fabuzaid at cs dot stanford dot edu
+                <p>
+                  Check out the <a
+                    href='http://papers.nips.cc/paper/6366-yggdrasil-an-optimized-system-for-training-deep-decision-trees-at-scale.pdf'>full
+                    paper at NIPS 2016</a>!
+                </p>
+                <p>
+                  Any questions? Shoot me an email:<br/>fabuzaid at cs dot stanford dot edu
+                </p>
+            </ul>
           </div>
-          <div style='float: left; width: 30%;'>
+          <!--<div style='float: left; width: 30%; margin-top: 15px;'>
             <img data-src='images/firas.jpg' width='100%'/>
-          </div>
+          </div>-->
         </section>
 
         <script src='lib/js/head.min.js'></script>

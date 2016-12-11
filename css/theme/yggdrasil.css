@@ -37,6 +37,13 @@ body {
   line-height: 1.3;
   font-weight: inherit; }
 
+.reveal .slides section .fragment.no-animation {
+  opacity: 0;
+  visibility: hidden; }
+  .reveal .slides section .fragment.no-animation.visible {
+    opacity: 1;
+    visibility: visible; }
+
 /*********************************************
  * HEADERS
  *********************************************/
@@ -46,7 +53,7 @@ body {
 .reveal h4,
 .reveal h5,
 .reveal h6 {
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0;
   color: #333;
   font-family: "Quicksand", sans-serif;
   font-weight: normal;
@@ -75,7 +82,7 @@ body {
  * OTHER
  *********************************************/
 .reveal p {
-  margin: 20px 0;
+  margin: 15px 0;
   line-height: 1.3; }
 
 /* Ensure certain elements are never larger than the slide itself */
@@ -140,7 +147,7 @@ body {
   display: block;
   position: relative;
   width: 70%;
-  margin: 20px auto;
+  margin: 15px auto;
   padding: 5px;
   font-style: italic;
   background: rgba(255, 255, 255, 0.05);
@@ -157,7 +164,7 @@ body {
   display: block;
   position: relative;
   width: 90%;
-  margin: 20px auto;
+  margin: 15px auto;
   text-align: left;
   font-size: 0.55em;
   font-family: monospace;

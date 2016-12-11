@@ -54,7 +54,7 @@ $mainFontWeight: 500;
 $mainColor: #333;
 
 // Vertical spacing between blocks of text
-$blockMargin: 20px;
+$blockMargin: 15px;
 
 // Headings
 $headingMargin: 0 0 $blockMargin 0;
@@ -130,6 +130,17 @@ body {
 .reveal .slides>section>section {
 	line-height: 1.3;
 	font-weight: inherit;
+}
+
+// Fragment without animation
+.reveal .slides section .fragment.no-animation {
+	opacity: 0;
+	visibility: hidden;
+
+	&.visible {
+		opacity: 1;
+		visibility: visible;
+	}
 }
 
 /*********************************************
