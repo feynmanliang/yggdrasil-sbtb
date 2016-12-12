@@ -448,14 +448,6 @@ body {
   transition: opacity 0.3s, visibility 0.3s;
 }
 
-.reveal .slides section#yggdrasil1 .fragment.current-fragment {
-  color: $correctColor;
-}
-
-.reveal .slides section#yggdrasil2 .fragment.current-fragment {
-  color: $correctColor;
-}
-
 .reveal .feature-label {
     transition: all 0.3s ease-out;
     -webkit-transform: scale(1.0);

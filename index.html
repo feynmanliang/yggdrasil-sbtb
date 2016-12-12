@@ -52,13 +52,7 @@
       <div class='slides'>
         <section>
           <h1>
-            Yggdrasil:
-            <!--
-            <sub>
-              <a href="https://www.youtube.com/watch?v=undaZKGe578">1</a>,
-              <a href="https://en.wikipedia.org/wiki/Yggdrasil">2</a>
-            </sub>
-            -->
+              <a href="https://www.youtube.com/watch?v=undaZKGe578">Yggd</a><a href="https://en.wikipedia.org/wiki/Yggdrasil">rasil</a>:
             An Optimized System for Training Deep Decision Trees at Scale
           </h1>
           <div class='center'>
@@ -83,13 +77,6 @@
           </table>
           <div style='margin-top: 25px;'>
             <img data-src='images/logos.png'  height='150px' />
-            <!--<img src='images/mit.png' height='60px'/>
-            <img src='images/ucla.png' height='60px'/>
-            <img src='images/stanford-infolab.png' height='100px'/>
-            <img src='images/cambridge.png' height='60px'/>
-          <div style='margin-top: 25px;'>
-            <img src='images/yahoo-logo.png' height='60px'/>
-            <img src='images/databricks.png' height='60px'/>-->
           </div>
           <a class='fragment'
             href='http://papers.nips.cc/paper/6366-yggdrasil-an-optimized-system-for-training-deep-decision-trees-at-scale.pdf'>Presented at NIPS 2016</a>
@@ -186,7 +173,7 @@
                   <ul>
                     <li class='fragment' data-fragment-index='0'><a
                         href='https://papers.nips.cc/paper/6381-a-communication-efficient-parallel-algorithm-for-decision-tree.pdf'>Meng
-                        et al., 2016</a>–also at this year's NIPS!</li>
+                        et al., 2016</a>—also at this year's NIPS!</li>
                   </ul>
                 <li class='fragment' data-fragment-index='2'>To limit communication, workers only consider $B$ thresholds</li>
                 <ul class='fragment'>
@@ -210,25 +197,25 @@
           <h2>The Problem with Planet</h2>
           <div>
             <span class='highlight'>Three problems:</span>
-              <ol>
-                <span class='incorrect'>
-                  <li style='margin-top: 0px;'>Another hyperparameter to tune: $B$</li>
-                  <li>Important tradeoff:</li>
-                </span>
-                <ul style='list-style-type: none;'>
-                  <li
-                  style='background-color: #dec026; text-align: center;
-                  padding: 10px 0 10px 0;
-                  margin-left: 25%; margin-right: 25%;
-                  border-radius: 10px;'>
-                  finding optimal split<br/>&#8597;<br/>runtime efficiency
-                  </li>
-                  <li class='incorrect' style='margin-left: 25%;
-                    margin-right: 25%; text-align: center;'><a
-                      href='https://papers.nips.cc/paper/6381-a-communication-efficient-parallel-algorithm-for-decision-tree.pdf'>Meng
-                      et al.</a> improve the tradeoff—but it's still there</li>
-                </ul>
-                <li class='incorrect'>
+              <ol class='incorrect'>
+                <li class='fragment' style='margin-top: 0px;'>Another hyperparameter to tune: $B$</li>
+                <li class='fragment'>
+                  Important tradeoff:
+                  <ul style='list-style-type: none;'>
+                    <li
+                    style='background-color: #dec026; text-align: center;
+                    padding: 10px 0 10px 0; color: black;
+                    margin-left: 25%; margin-right: 25%;
+                    border-radius: 10px;'>
+                    finding optimal split<br/>&#8597;<br/>runtime efficiency
+                    </li>
+                    <li style='margin-left: 25%;
+                        margin-right: 25%; text-align: center;'>(<a
+                        href='https://papers.nips.cc/paper/6381-a-communication-efficient-parallel-algorithm-for-decision-tree.pdf'>Meng
+                        et al.</a> improve the tradeoff—but it's still there)</li>
+                  </ul>
+                </li>
+                <li class='fragment'>
                   Large $p$ and $D$ $\rightarrow$ poor runtime (even if you choose optimal $B$!)
                 </li>
               </ol>
@@ -278,24 +265,29 @@
         <section style='text-align: left;'>
           <h2>Tale of the Tape: Planet vs. Yggdrasil </h2>
           <div class='center' style='position: relative; margin-top: -1%;'>
-            <!--<div class='fragment fade-out' data-fragment-index='1' style='position: absolute;'>
-              <img data-src='images/yggdrasil-vs-planet-diagram.png' width='78%'/>
-            </div>-->
-            <!--<div class='fragment' data-fragment-index='1' style='position: relative;'>-->
-            <div style='position: relative;'>
+            <div>
+              <img data-src='images/yggdrasil-vs-planet-diagram.png' width='78.75%'/>
+              <img data-src='images/yggdrasil-vs-planet-table.svg' width='75%'/>
+            </div>
+            <div>
+            </div>
+          </div>
+        </section>
+
+        <section style='text-align: left;'>
+          <h2>Tale of the Tape: Planet vs. Yggdrasil </h2>
+          <div class='center' style='position: relative; margin-top: -1%;'>
+            <div>
               <div style='float: left; width: 50%;'>
                 <img data-src='plots/n-vs-p.svg' width='100%'/>
-                <!--<div class='caption'>$D=15$</div>-->
               </div>
-              <!--<div class='fragment' data-fragment-index='2' style='float: right; width: 50%;'>-->
-              <div style='float: right; width: 50%;'>
+              <div class='fragment' style='float: right; width: 50%;'>
                 <img data-src='plots/n-vs-d.svg' width='100%'/>
-                <!--<div class='caption'>$p=2500$</div>-->
               </div>
             </div>
             <div>
-              <img data-src='images/yggdrasil-vs-planet-table.png' width='75%'/>
-              <div class='center fragment' data-fragment-index='3' style='padding: 0 50px 0 50px;'>
+              <img data-src='images/yggdrasil-vs-planet-table.svg' width='75%'/>
+              <div class='center fragment' style='padding: 0 50px 0 50px;'>
                 &#128273; <span class='correct'>Yggdrasil is more efficient
                   than <span class='small-caps'>Planet</span> for large $p$ and
                   $D$</span>
@@ -318,11 +310,6 @@
           </div>
         </section>
 
-        <!--<section>
-          <h1>In theory, theory and practice are the same</h1>
-          <h1 class='fragment emph'>In practice, they are not</h1>
-        </section>-->
-
         <section style='text-align: left;'>
           <h2>Ain't as easy as it looks</h2>
           <div>
@@ -332,11 +319,6 @@
             </div>
           </div>
         </section>
-
-        <!--<section>
-          <h1>If the facts don't fit the theory...</h1>
-          <h1 class='fragment emph'>change the facts</h1>
-        </section>-->
 
         <section id='yggdrasil2' style='text-align: left;'>
           <h2>Yggdrasil in Action</h2>
@@ -395,19 +377,6 @@
               </ul>
             </ul>
         </section>
-
-        <!--
-        <section style='text-align: left;'>
-          <h2>How expensive is sorting?</h2>
-          <div>
-              <p>Does Yggdrasil do an $O(n \log n)$ sort per iteration?</p>
-              <p class='fragment correct' style='margin-bottom: 0;'>No!</p>
-              <ul>
-                <li class='fragment'>The first sort operation is $O(n \log n)$</li>
-              </ul>
-          </div>
-        </section>
-        -->
 
         <section style='text-align: left;'>
           <h2>Additional Optimizations</h2>
@@ -622,13 +591,13 @@
             </div>
             <div style='float: right; width: 45%;'>
               <div class='fragment' data-fragment-index='2' style='margin-top: 15px;'>
-                <img data-src='images/mllib-code.png' width='115%'/>
+                <img data-src='images/mllib-code.png' width='100%'/>
               </div>
               <div class='fragment' data-fragment-index='3'>
                 <div class='center'>
                   <img data-src='images/arrow.svg' width='10%'/>
                 </div>
-                <img data-src='images/yggdrasil-code.png' width='115%'/>
+                <img data-src='images/yggdrasil-code.png' width='100%'/>
               </div>
             </div>
           </div>
@@ -684,9 +653,9 @@
                 </p>
             </ul>
           </div>
-          <!--<div style='float: left; width: 30%; margin-top: 15px;'>
-            <img data-src='images/firas.jpg' width='100%'/>
-          </div>-->
+          <div style='float: left; width: 30%; margin-top: 15px;'>
+            <img data-src='images/firas.jpg' style='border-radius: 10px;' width='100%'/>
+          </div>
         </section>
 
         <script src='lib/js/head.min.js'></script>
@@ -696,7 +665,8 @@
         <script src='lib/js/d3.min.js'></script>
         <script src='js/reveal.min.js'></script>
         <script src='js/tree-training-set-98.js'></script>
-        <script src='js/decision-tree-tutorial.js'></script>
+        <script src='js/util.js'></script>
+        <!--<script src='js/decision-tree-tutorial.js'></script>-->
         <script src='js/yggdrasil-algo.js'></script>
         <script>
           // Full list of configuration options available at:
@@ -706,6 +676,7 @@
             progress: true,
             history: true,
             center: true,
+            fragments: false,
             slideNumber: true,
             mouseWheel: false,
             transition: 'fade', // none/fade/slide/convex/concave/zoom
@@ -732,135 +703,71 @@
 
           // Decision Tree Tutorial and Yggdrasil Algo
           (function() {
-            /** Code for Decision Tree Tutorial **/
-            const SCROLL_EVENT = (/Firefox/i.test(navigator.userAgent))? 'DOMMouseScroll' : 'mousewheel';
-            const PREV_PAGE = 45;
-            const NEXT_PAGE = 100;
-            const SCROLL_DELTA = 5;
-
-            // var decisionTree = new DecisionTreeView({
-            //   el: $('#decision-tree-tutorial'),
-            //   data: {
-            //     tree: tree_data,
-            //     stats: tree_stats
-            //   }
-            // });
-
-            var scroll = PREV_PAGE;
-
-            var decisionTreeTutorialKeyBindings = function() {
-              decisionTree.handleScroll(scroll);
-              var prev = function() {
-                scroll -= SCROLL_DELTA;
-                if (scroll <= PREV_PAGE) {
-                  removeBindings();
-                  Reveal.prev();
-                  return;
-                }
-                decisionTree.handleScroll(scroll);
-              };
-              var next = function() {
-                scroll += SCROLL_DELTA;
-                if (scroll >= NEXT_PAGE) {
-                  removeBindings();
-                  Reveal.next();
-                  return;
-                }
-                decisionTree.handleScroll(scroll);
-              };
-              Reveal.configure({
-                keyboard: {
-                  // p, page up
-                  80: prev,
-                  33: prev,
-                  // h, left
-                  72: prev,
-                  37: prev,
-                  // k, up
-                  75: prev,
-                  38: prev,
-                  // n, page down
-                  78: next,
-                  34: next,
-                  // l, right
-                  76: next,
-                  39: next,
-                  // j, down
-                  74: next,
-                  40: next,
-                  // ENTER
-                  13: next,
-                  // SPACE
-                  32: next
-                }
-              });
-            };
-
-            var decisionTreeTutorialScrollBindings = function(e) {
-              scroll += (e.deltaY) ? e.deltaY / 10 : e.detail; // slow down scrolling by factor of 10 for Chrome/Safari
-              scroll = Math.max(PREV_PAGE, Math.min(scroll, NEXT_PAGE)); // clip between PREV_PAGE-NEXT_PAGE
-
-              if (scroll <= PREV_PAGE) {
-                scroll = PREV_PAGE;
-                removeBindings();
-                Reveal.prev();
-                return;
-              } else if (scroll >= NEXT_PAGE) {
-                scroll = NEXT_PAGE - (SCROLL_DELTA - 1);
-                removeBindings();
-                Reveal.next();
-                return;
-              }
-              decisionTree.handleScroll(scroll);
-            };
-
             /** Code for Yggdrasil Algo **/
             var yggdrasilAlgoKeyBindings = function(yggdrasilAlgo, initState, maxState) {
               var obj = {
                 state: initState,
+                highlightStage: function(index, highlight) {
+                  if (index >= initState && index <= maxState) {
+                    if (highlight) {
+                      $($(Reveal.getCurrentSlide()).find('li')[index - 1]).addClass('correct');
+                    } else {
+                      $($(Reveal.getCurrentSlide()).find('li')[index - 1]).removeClass('correct');
+                    }
+                  }
+                },
                 f: function() {
-                  var v = this;
+                  var obj = this;
                   Reveal.configure({
                     keyboard: {
                       // p, page up
-                      80: v.prev,
-                      33: v.prev,
+                      80: obj.prev,
+                      33: obj.prev,
                       // h, left
-                      72: v.prev,
-                      37: v.prev,
+                      72: obj.prev,
+                      37: obj.prev,
                       // k, up
-                      75: v.prev,
-                      38: v.prev,
+                      75: obj.prev,
+                      38: obj.prev,
                       // n, page down
-                      78: v.next,
-                      34: v.next,
+                      78: obj.next,
+                      34: obj.next,
                       // l, right
-                      76: v.next,
-                      39: v.next,
+                      76: obj.next,
+                      39: obj.next,
                       // j, down
-                      74: v.next,
-                      40: v.next,
+                      74: obj.next,
+                      40: obj.next,
                       // ENTER
-                      13: v.next,
+                      13: obj.next,
                       // SPACE
-                      32: v.next
+                      32: obj.next
                     }
                   });
+                  obj.highlightStage(obj.state, true);
                 }
               };
-              obj.prev = function() {
-                Reveal.prev();
+              obj.prev = function(e) {
+                obj.highlightStage(obj.state, false);
                 obj.state--;
+                obj.highlightStage(obj.state, true);
                 if (obj.state < initState) {
                   obj.state = initState;
+                  Reveal.prev();
+                } else {
+                  Reveal.prevFragment();
                 }
                 yggdrasilAlgo.update({state: obj.state});
               };
-              obj.next = function() {
-                Reveal.next();
+              obj.next = function(e) {
+                obj.highlightStage(obj.state, false);
                 obj.state++;
+                obj.highlightStage(obj.state, true);
                 if (obj.state > maxState) {
                   obj.state = maxState;
+                  Reveal.next();
+                } else {
+                  Reveal.nextFragment();
                 }
                 yggdrasilAlgo.update({state: obj.state});
               };
@@ -891,21 +798,22 @@
              * yggdrasilAlgo slides
              **/
             var removeBindings = function() {
-              document.removeEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
+              // document.removeEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
               Reveal.configure({
-                keyboard : {}
+                keyboard : {},
               });
             };
 
-            var decisionTreeIndex = $('section').index($('#decision-tree'));
+            // var decisionTreeIndex = $('section').index($('#decision-tree'));
             var algoIndex1 = $('section').index($('#yggdrasil1'));
             var algoIndex2 = $('section').index($('#yggdrasil2'));
 
             Reveal.addEventListener( 'slidechanged', function(event) {
-              if (event.indexh === decisionTreeIndex) {
+              /*if (event.indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
                 document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
-              } else if (event.indexh === algoIndex1) {
+              } else */
+              if (event.indexh === algoIndex1) {
                 algo1KeyBindings.state = ($(event.previousSlide).index() > algoIndex1) ? BEST_GLOBAL_SPLIT : ALL_ON_MASTER;
                 algo1.update({state: algo1KeyBindings.state});
                 algo1KeyBindings.f();
@@ -919,15 +827,97 @@
             });
 
             // if we start on the decisionTree/yggdrasilAlgo slide, set up key bindings and scroll events
-           if (Reveal.getState().indexh === decisionTreeIndex) {
+            /*if (Reveal.getState().indexh === decisionTreeIndex) {
                 decisionTreeTutorialKeyBindings();
                 document.addEventListener(SCROLL_EVENT, decisionTreeTutorialScrollBindings, false);
-            } else if (Reveal.getState().indexh === algoIndex1) {
+            } else */
+            if (Reveal.getState().indexh === algoIndex1) {
                 algo1KeyBindings.f();
             } else if (Reveal.getState().indexh === algoIndex2) {
                 algo2KeyBindings.f();
             }
 
+            /** Code for Decision Tree Tutorial **/
+            // const SCROLL_EVENT = (/Firefox/i.test(navigator.userAgent))? 'DOMMouseScroll' : 'mousewheel';
+            // const PREV_PAGE = 45;
+            // const NEXT_PAGE = 100;
+            // const SCROLL_DELTA = 5;
+
+            // var decisionTree = new DecisionTreeView({
+            //   el: $('#decision-tree-tutorial'),
+            //   data: {
+            //     tree: tree_data,
+            //     stats: tree_stats
+            //   }
+            // });
+
+            // var scroll = PREV_PAGE;
+
+            // var decisionTreeTutorialKeyBindings = function() {
+            //   decisionTree.handleScroll(scroll);
+            //   var prev = function() {
+            //     scroll -= SCROLL_DELTA;
+            //     if (scroll <= PREV_PAGE) {
+            //       removeBindings();
+            //       Reveal.prev();
+            //       return;
+            //     }
+            //     decisionTree.handleScroll(scroll);
+            //   };
+            //   var next = function() {
+            //     scroll += SCROLL_DELTA;
+            //     if (scroll >= NEXT_PAGE) {
+            //       removeBindings();
+            //       Reveal.next();
+            //       return;
+            //     }
+            //     decisionTree.handleScroll(scroll);
+            //   };
+            //   Reveal.configure({
+            //     keyboard: {
+            //       // p, page up
+            //       80: prev,
+            //       33: prev,
+            //       // h, left
+            //       72: prev,
+            //       37: prev,
+            //       // k, up
+            //       75: prev,
+            //       38: prev,
+            //       // n, page down
+            //       78: next,
+            //       34: next,
+            //       // l, right
+            //       76: next,
+            //       39: next,
+            //       // j, down
+            //       74: next,
+            //       40: next,
+            //       // ENTER
+            //       13: next,
+            //       // SPACE
+            //       32: next
+            //     }
+            //   });
+            // };
+
+            // var decisionTreeTutorialScrollBindings = function(e) {
+            //   scroll += (e.deltaY) ? e.deltaY / 10 : e.detail; // slow down scrolling by factor of 10 for Chrome/Safari
+            //   scroll = Math.max(PREV_PAGE, Math.min(scroll, NEXT_PAGE)); // clip between PREV_PAGE-NEXT_PAGE
+
+            //   if (scroll <= PREV_PAGE) {
+            //     scroll = PREV_PAGE;
+            //     removeBindings();
+            //     Reveal.prev();
+            //     return;
+            //   } else if (scroll >= NEXT_PAGE) {
+            //     scroll = NEXT_PAGE - (SCROLL_DELTA - 1);
+            //     removeBindings();
+            //     Reveal.next();
+            //     return;
+            //   }
+            //   decisionTree.handleScroll(scroll);
+            // };
           })();
         </script>
 
